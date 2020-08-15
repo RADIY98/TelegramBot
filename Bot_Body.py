@@ -5,11 +5,11 @@ from time import sleep
 
 class BotHandler:
     """
-
+    Класс Бота
     """
     def __init__(self):
         """
-
+        Инициализация атрибутов класса
         """
         self.token = base_names.TOKEN
         self.url = base_names.URL
@@ -17,7 +17,7 @@ class BotHandler:
 
     def get_updates(self, offset=None, timeout=30):
         """
-
+        Метод проверки на наличие обновлений
         :return:
         """
         method = 'getUpdates'
