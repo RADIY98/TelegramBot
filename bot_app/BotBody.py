@@ -1,47 +1,49 @@
-from typing import Optional
-from pydantic import BaseModel
+import asyncio
+from datetime import datetime
+import enum
 import requests
-import base_names
-from bot_app import Application
+from bot_app import base_names, Application
 
+STARTED_TIME = datetime.now()
+with open("last_update", "r") as f:
+    last_updated_id = f.readline()
+    OFFSET = int(last_updated_id)
 
-class Item(BaseModel):
-    name: str
-    price: float
-    is_offer: Optional[bool] = None
+class TelegramMethods(enum.Enum):
+    get_updates = '/getUpdates'
+    send_message = '/sendMessage'
+    setWebhook = "/setWebhook"
 
 
 app = Application({}).create_app()
 
-
 @app.get('/')
-def home():
-    return 'Welcome to the beginning'
-
-
-@app.get("/items/{item_id}")
-def read_items(item_id: int, q: Optional[str] = None):
-    return {"item_id": item_id, "q": q}
-
-
-@app.put("/items/{item_id}")
-def update_items(item_id: int, item: Item):
-    return {"item_name": item.name,
-            "item_id": item_id}
+async def loong_pool_request():
+    while True:
+        await asyncio.sleep(30)
+        get_updates()
 
 @app.get("/bot")
-def get_updates(timeout=None, offset=30):
-    method = '/getUpdates'
-    params = {'timeout': timeout, 'offset': offset}
-    resp = requests.get(base_names.URL + base_names.TOKEN + method, params)
-    result_json = resp.json()['result']
-    for record in result_json:
-        msg = record.get("message")
-        chat = msg.get("chat")
-        client_id = chat.get("id")
-        send_message(client_id, "This is message for you only")
+def get_updates():
+    global OFFSET
 
-    return result_json
+    update_id = None
+    method = '/getUpdates'
+    params = {'limit': 100, 'offset': OFFSET+1}
+    resp = requests.get(base_names.URL + base_names.TOKEN + method, params)
+    result_list = resp.json()['result']
+    if result_list:
+        for record in result_list:
+            msg = record.get("message")
+            # time_posted = datetime.utcfromtimestamp(msg.get('date'))
+            chat = msg.get("chat")
+            client_id = chat.get("id")
+            send_message(client_id, "This is message for you only")
+            update_id = record.get("update_id")
+        if update_id is not None:
+            OFFSET = update_id
+
+    return result_list
 
 
 @app.put("/bot")
