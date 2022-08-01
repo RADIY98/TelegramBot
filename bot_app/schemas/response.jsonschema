@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "$id": "https://example.com/schemas/response",
+  "title": "Message",
+  "description": "Jsonschema for message main part",
+  "type": "object",
+  "properties": {
+      "update_id": {
+        "type": "integer"
+      },
+    "message": {
+      "description": "Main message body",
+      "$ref": "schemas/message"
+    }
+  }
+}

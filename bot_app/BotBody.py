@@ -1,21 +1,17 @@
 import asyncio
-import os, sys
+import json
 from datetime import datetime
-import enum
 import requests
-from bot_app import Application
 import base_names
-from bot_app.KeyBoard import KeyBoard
+from fastapi import FastAPI
+from jsonschema import validate
+from .KeyBoard import KeyBoard
+from .common import load_schema
 
+app = FastAPI()
 STARTED_TIME = datetime.now()
 OFFSET = 579187220
-# PATH = "last_update.txt"
-# with open(PATH, "r") as f:
-#     last_updated_id = f.readline()
-#     OFFSET = int(last_updated_id)
 
-
-app = Application({}).create_app()
 
 # TODO ПРИ ПОДКЛЮЧЕНИЕ К БОТУ СДЕЛАТЬ ПРОКИДЫВАНИЕ КНОПОК
 
@@ -26,7 +22,7 @@ async def loong_pool_request():
         get_updates()
 
 
-@app.get("/bot")
+@app.get(r"/bot")
 def get_updates():
     global OFFSET
 
@@ -37,22 +33,21 @@ def get_updates():
     result_list = resp.json()['result']
     if result_list:
         for record in result_list:
+            validate(instance=record, schema=load_schema("response"))
             msg = record.get("message")
             text = msg.get("text")
 
-            # time_posted = datetime.utcfromtimestamp(msg.get('date'))
             chat = msg.get("chat")
             update_id = record.get("update_id")
             client_id = chat.get("id")
-            import pydevd_pycharm
-            pydevd_pycharm.settrace('localhost', port=2005, stdoutToServer=True, stderrToServer=True)
-            if text == "/start" or True:
-                send_message(chat_id=client_id, text=text, reply_markup={'inline keyboard': KeyBoard().get_keyboard()})
-                # send_message(chat_id=client_id, text="Default response")
-            # send_message(client_id, "This is message for you only")
+
+            if text == "/start":
+                send_message(chat_id=client_id, text=text,
+                             reply_markup=json.dumps({'keyboard': KeyBoard().get_keyboard()}))
+
+                # send_message(chat_id=client_id, text="Default response")  
+            send_message(chat_id=client_id, text="This is message for you only")
         if update_id is not None:
-            # with open(PATH, 'w') as file:
-            #     file.write(update_id)
             OFFSET = update_id
 
     return result_list
