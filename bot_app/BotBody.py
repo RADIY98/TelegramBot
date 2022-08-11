@@ -2,11 +2,10 @@ import asyncio
 import json
 from datetime import datetime
 import requests
-import base_names
 from fastapi import FastAPI
-from jsonschema import validate
 from .KeyBoard import KeyBoard
-from .common import load_schema
+from .validation import Response
+import base_names
 
 app = FastAPI()
 STARTED_TIME = datetime.now()
@@ -31,9 +30,10 @@ def get_updates():
     params = {'limit': 100, 'offset': OFFSET + 1}
     resp = requests.get(base_names.URL + base_names.TOKEN + method, params)
     result_list = resp.json()['result']
+
     if result_list:
         for record in result_list:
-            validate(instance=record, schema=load_schema("response"))
+            Response.parse_obj(record)
             msg = record.get("message")
             text = msg.get("text")
 
