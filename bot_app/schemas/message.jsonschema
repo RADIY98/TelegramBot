@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "$id": "https://example.com/schemas/message",
+  "description": "MsgBody",
+  "properties": {
+    "message_id": {
+      "type": "integer"
+    },
+    "from": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "is_bot": {
+          "type": "boolean"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "language_code": {
+          "type": "string"
+        }
+      }
+    },
+    "chat": {
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "date": {
+      "type": "integer"
+    },
+    "text": {
+      "type": "string"
+    }
+  },
+  "required": ["message_id", "from", "chat", "date", "text"]
+}

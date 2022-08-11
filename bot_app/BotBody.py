@@ -1,21 +1,18 @@
 import asyncio
+import json
 from datetime import datetime
-import enum
 import requests
-from bot_app import base_names, Application
+from fastapi import FastAPI
+from .KeyBoard import KeyBoard
+from .validation import Response
+import base_names
 
+app = FastAPI()
 STARTED_TIME = datetime.now()
-with open("last_update", "r") as f:
-    last_updated_id = f.readline()
-    OFFSET = int(last_updated_id)
-
-class TelegramMethods(enum.Enum):
-    get_updates = '/getUpdates'
-    send_message = '/sendMessage'
-    setWebhook = "/setWebhook"
+OFFSET = 579187220
 
 
-app = Application({}).create_app()
+# TODO ПРИ ПОДКЛЮЧЕНИЕ К БОТУ СДЕЛАТЬ ПРОКИДЫВАНИЕ КНОПОК
 
 @app.get('/')
 async def loong_pool_request():
@@ -23,23 +20,33 @@ async def loong_pool_request():
         await asyncio.sleep(30)
         get_updates()
 
-@app.get("/bot")
+
+@app.get(r"/bot")
 def get_updates():
     global OFFSET
 
     update_id = None
     method = '/getUpdates'
-    params = {'limit': 100, 'offset': OFFSET+1}
+    params = {'limit': 100, 'offset': OFFSET + 1}
     resp = requests.get(base_names.URL + base_names.TOKEN + method, params)
     result_list = resp.json()['result']
+
     if result_list:
         for record in result_list:
+            Response.parse_obj(record)
             msg = record.get("message")
-            # time_posted = datetime.utcfromtimestamp(msg.get('date'))
+            text = msg.get("text")
+
             chat = msg.get("chat")
-            client_id = chat.get("id")
-            send_message(client_id, "This is message for you only")
             update_id = record.get("update_id")
+            client_id = chat.get("id")
+
+            if text == "/start":
+                send_message(chat_id=client_id, text=text,
+                             reply_markup=json.dumps({'keyboard': KeyBoard().get_keyboard()}))
+
+                # send_message(chat_id=client_id, text="Default response")  
+            send_message(chat_id=client_id, text="This is message for you only")
         if update_id is not None:
             OFFSET = update_id
 
@@ -47,13 +54,12 @@ def get_updates():
 
 
 @app.put("/bot")
-def send_message(chat, text):
+def send_message(**kwargs):
     """
     Метод отправки сообщений
     :return:
     """
-    params = {"chat_id": chat, "text": text}
     method = '/sendMessage'
-    response = requests.post(base_names.URL + base_names.TOKEN + method, data=params)
+    response = requests.post(base_names.URL + base_names.TOKEN + method, data=kwargs)
 
     return response
