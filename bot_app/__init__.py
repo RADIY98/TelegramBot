@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from typing import Optional
+from .BotBody import get_updates, send_message, router
 
 
-# Application = FastAPI()
+app = FastAPI()
+app.include_router(router)

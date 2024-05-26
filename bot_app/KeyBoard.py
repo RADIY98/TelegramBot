@@ -8,10 +8,8 @@ class KeyBoard:
     Класс отвечающий за отображение клавиатуры
     """
 
-    def __init__(self):
-        self.button_dict = {"Начать тренировку": '0.25',
-                            "Изменить тренировку": '0.25',
-                            "Фактическое кол-во подходов": '0.25'}
+    def __init__(self, buttons):
+        self.button_dict = buttons
 
     def get_keyboard(self):
         """
