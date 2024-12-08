@@ -1,3 +1,6 @@
+from typing import List
+
+
 class KeyboardButton:
     def __init__(self, text):
         self.text = text
@@ -9,7 +12,7 @@ class KeyBoard:
     """
 
     def __init__(self, buttons):
-        self.button_dict = buttons
+        self.buttons: List[str] = buttons
 
     def get_keyboard(self):
         """
@@ -18,4 +21,21 @@ class KeyBoard:
         :return:
         """
 
-        return [[KeyboardButton(text=key).text] for key, _ in self.button_dict.items()]
+        return [[KeyboardButton(text=key).text] for key in self.buttons]
+
+
+class InlineKeyboardButton:
+    def __init__(self, text):
+        self.text = text
+
+
+class InlineKeyBoard:
+    """
+    Класс, отвечающий за inline-клавиатуру
+    """
+    def __init__(self, buttons):
+        self.buttons = buttons
+
+    def get_keyboard(self):
+        return [[InlineKeyboardButton(text=key).text] for key in self.buttons]
+
