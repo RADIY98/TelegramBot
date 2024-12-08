@@ -34,8 +34,6 @@ def get_updates():
     Метод получения обновлений
     """
     response_list = _get_http_request()
-    import pydevd_pycharm
-    pydevd_pycharm.settrace('localhost', port=2010, stdoutToServer=True, stderrToServer=True)
     if response_list:
         client_data = _get_clients_update_id(
             [
