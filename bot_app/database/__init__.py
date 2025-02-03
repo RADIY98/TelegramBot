@@ -37,8 +37,8 @@ def sql_query(sql_request: str, *args):
     """
     Выполняем запрос к бд
     """
-    # connection = connect("dbname=telegram_bot_db user=postgres host=postgres password=postgres port=5432")
-    connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
+    connection = connect("dbname=telegram_bot_db user=postgres host=postgres password=postgres port=5432")
+    # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
     result_list = []
     dict_value = {}
 
@@ -68,8 +68,8 @@ def sql_query_record(sql_tmpl: str, params = None) -> dict:
     :param args: args
     :return:
     """
-    # connection = connect("dbname=telegram_bot_db user=postgres host=postgres password=postgres port=5432")
-    connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
+    connection = connect("dbname=telegram_bot_db user=postgres host=postgres password=postgres port=5432")
+    # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
 
     result = {}
 
@@ -96,8 +96,8 @@ def sql_query_scalar(sql_tmpl: str, args):
     :return:
     """
     result = {}
-    # connection = connect("dbname=telegram_bot_db user=postgres host=postgres password=postgres port=5432")
-    connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
+    connection = connect("dbname=telegram_bot_db user=postgres host=postgres password=postgres port=5432")
+    # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
 
     cursor = connection.cursor()
     cursor.execute(sql_tmpl, args)
