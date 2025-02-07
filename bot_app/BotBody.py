@@ -3,14 +3,13 @@ import json
 import os
 
 from datetime import datetime
-from typing import Optional, List, Dict
 
 import requests
 from fastapi import APIRouter
 from bot_app.KeyBoard import KeyBoard
 from bot_app.trains.utils import parse_file
 from . import base_names
-from bot_app.database import sql_query, sql_query_scalar
+from bot_app.database import insert, select, delete, update
 from .schemas.Response import Msg
 from .trains import get_all_trains_for_keyboard, get_all_exercises_for_keyboard
 
@@ -33,12 +32,12 @@ def get_updates():
     """
     Метод получения обновлений
     """
+    text_msg = None
+    key_board = None
     response_list = _get_http_request()
     if response_list:
-        client_data = _get_clients_update_id(
-            [
-                record.get("message").get("chat").get("id") for record in response_list
-            ]
+        client_data = select.get_clients_update_id(
+            [record.get("message").get("chat").get("id") for record in response_list]
         )
 
         for record in response_list:
@@ -48,94 +47,46 @@ def get_updates():
             print(update_id)
 
             if not client_data.get(client_id):
-                _insert_client(msg, update_id)
+                insert.insert_client(msg, update_id)
 
             elif update_id <= client_data.get(client_id):
                 continue
 
             trains = get_all_trains_for_keyboard(client_id)
 
-            if msg.text == "/start":
-                send_message(
-                    chat_id=client_id,
-                    text=msg.text,
-                    reply_markup=json.dumps(
-                        {'keyboard': KeyBoard(base_names.StartButtons.buttons_array).get_keyboard()})
-                )
-                _insert_client(msg, update_id)
+            if msg.text in ["/start", base_names.MAIN_MENU]:
+                text_msg = msg.text
+                key_board = base_names.StartButtons.buttons_array
+
+                insert.insert_client(msg, update_id)
             elif msg.text == base_names.StartButtons.trains:
-                print()
-                send_message(
-                    chat_id=client_id,
-                    text=msg.text,
-                    reply_markup=json.dumps(
-                        {
-                            'keyboard': KeyBoard(get_all_trains_for_keyboard(client_id)).get_keyboard()
-                        }
-                    )
-                )
+                if trains:
+                    text_msg = msg.text
+                    key_board = trains
+                else:
+                    text_msg = "Давайте добавим тренировку"
+                    key_board = None
             elif msg.text in trains[:-1]:
-                send_message(
-                    chat_id=client_id,
-                    text=get_all_exercises_for_keyboard(client_id, msg.text),
-                    reply_markup=json.dumps(
-                        {
-                            'keyboard': KeyBoard(get_all_trains_for_keyboard(client_id)).get_keyboard()
-                        }
-                    )
-                )
+                text_msg = get_all_exercises_for_keyboard(client_id, msg.text)
+                key_board = trains
+
             elif msg.text == base_names.StartButtons.statistic:
                 pass
-            elif msg.text == base_names.MAIN_MENU:
-                send_message(
-                    chat_id=client_id,
-                    text=msg.text,
-                    reply_markup=json.dumps(
-                        {'keyboard': KeyBoard(base_names.StartButtons.buttons_array).get_keyboard()})
-                )
             elif msg.document is not None:
                 file = __download_file(msg.document)
                 train_obj = parse_file(file)
-                sql_query("""
-                    DELETE FROM
-                        "Train"
-                    WHERE
-                        "ClientID"=%s::bigint
-                    """, [client_id]
-                )
+                delete.delete_all_trains(client_id)
                 for train_name, train in train_obj.items():
-                    sql_query(
-                        """
-                        INSERT INTO
-                            "Train"
-                            (
-                            "Name",
-                            "ClientID",
-                            "Settings"
-                            )
-                        VALUES 
-                        (
-                            %s::text,
-                            %s::bigint,
-                            %s::json
-                        )
-                        """, (train_name, client_id, json.dumps(train))
-                    )
+                    insert.insert_train(train_name, client_id, train)
+            if text_msg is not None:
+                send_message(
+                    chat_id=client_id,
+                    text=text_msg,
+                    reply_markup=json.dumps(
+                        {'keyboard': KeyBoard(key_board).get_keyboard()})
+                )
 
-            res = sql_query(
-                """
-                UPDATE
-                    "Client"
-                SET
-                    "UpdateId"=%s::bigint
-                WHERE
-                    "id"=%s::bigint
-                RETURNING
-                    "id",
-                    "UpdateId"
-                
-                """, (update_id, client_id)
-            )
+            res = update.update_client_last_update(client_id, update_id)
             print(res)
             send_message(chat_id=client_id, text=f"{client_id}, {update_id}")
 
@@ -169,50 +120,6 @@ def _call_tg_method(method: str, params: dict) -> dict:
     result_list = resp.json()
 
     return result_list
-
-
-def _get_clients_update_id(clients: List[int]) -> Dict[int, int]:
-    """
-    Получим данные клиентов из БД
-    """
-    clients_last_update: Optional[dict] = sql_query_scalar(
-        """
-                        SELECT
-                            jsonb_build_object(
-                                "id"::bigint, "UpdateId"::bigint
-                            ) AS Result
-                        FROM
-                            "Client"
-                        WHERE
-                            "id" = ANY(%(clients)s::bigint[])
-                """, {'clients': clients}
-    )
-    if clients_last_update:
-        clients_last_update = {int(key): value for key, value in clients_last_update.items()}
-    else:
-        clients_last_update = {}
-
-    return clients_last_update
-
-
-def _insert_client(msg: Msg, update_id: int):
-    """
-    Добавляем клиента в БД
-    """
-    sql_query(
-        f"""
-                    INSERT INTO
-                        "Client"
-                    VALUES 
-                        (
-                            %s::bigint,
-                            %s::text,
-                            %s::text,
-                            %s::bigint
-                        )
-                    """,
-        (msg.chat.id, msg.chat.first_name, msg.chat.username, update_id)
-    )
 
 
 def __download_file(document) -> requests.Response:

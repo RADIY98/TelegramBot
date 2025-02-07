@@ -21,7 +21,10 @@ def get_all_trains_for_keyboard(client_id):
                 "ClientID"
         """, [client_id]
     )
-    result.append(base_names.MAIN_MENU)
+    if result:
+        result.append(base_names.MAIN_MENU)
+    else:
+        result = [base_names.MAIN_MENU]
     return result
 
 

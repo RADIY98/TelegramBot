@@ -3,31 +3,53 @@ from psycopg2 import connect
 
 def init_tables():
     __create_client_table()
-
     __create_train_table()
+    __create_exercise_table()
 
 
-def __create_client_table():
+def __create_client_table() -> None:
+    """
+    Создаем таблицу клиента
+    """
     sql_query(
         """
         CREATE TABLE IF NOT EXISTS "Client" (
         "id" INTEGER PRIMARY KEY,
         "FirstName" TEXT NOT NULL,
         "UserName" TEXT NOT NULL,
-        "UpdateId" INTEGER NOT NULL
+        "UpdateId" INTEGER NOT NULL,
+        "Status" INTEGER NOT NULL
         )
         """
     )
 
 
-def __create_train_table():
+def __create_train_table() -> None:
+    """
+    Создаем таблицу тренировок
+    """
     sql_query(
         """
         CREATE TABLE IF NOT EXISTS "Train" (
         "id" SERIAL PRIMARY KEY,
         "Name" text NOT NULL,
-        "ClientID" INTEGER NOT NULL REFERENCES "Client"(id),
-        "Settings" JSON NOT NULL
+        "ClientID" INTEGER NOT NULL REFERENCES "Client"(id)
+        )
+        """
+    )
+
+
+def __create_exercise_table() -> None:
+    """
+    Создаем таблицу упражнений
+    """
+    sql_query(
+        """
+        CREATE TABLE IF NOT EXISTS "Excercise" (
+        "id" SERIAL PRIMARY KEY,
+        "Name" text NOT NULL,
+        "TrainId" INTEGER NOT NULL REFERENCES "Train"(id),
+        "Settings" jsonb
         )
         """
     )
