@@ -15,3 +15,16 @@ def delete_all_trains(client_id: int) -> None:
                     "ClientID"=%s::bigint
                 """, [client_id]
     )
+
+def delete_train(train_name: str) -> None:
+    """
+    Удаление тренировки
+    """
+    sql_query(
+        """
+            DELETE FROM
+                "Train"
+            WHERE
+                "Name"=%s::text
+        """, [train_name]
+    )

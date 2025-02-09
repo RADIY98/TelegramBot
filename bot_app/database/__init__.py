@@ -18,7 +18,8 @@ def __create_client_table() -> None:
         "FirstName" TEXT NOT NULL,
         "UserName" TEXT NOT NULL,
         "UpdateId" INTEGER NOT NULL,
-        "Status" INTEGER NOT NULL
+        "Status" INTEGER,
+        "SelectedEntity" INTEGER
         )
         """
     )
@@ -45,7 +46,7 @@ def __create_exercise_table() -> None:
     """
     sql_query(
         """
-        CREATE TABLE IF NOT EXISTS "Excercise" (
+        CREATE TABLE IF NOT EXISTS "Exercise" (
         "id" SERIAL PRIMARY KEY,
         "Name" text NOT NULL,
         "TrainId" INTEGER NOT NULL REFERENCES "Train"(id),

@@ -37,3 +37,37 @@ def get_clients_update_id(clients: List[int]) -> Dict[int, int]:
         clients_last_update = {}
 
     return clients_last_update
+
+
+def get_client_status(client: int) -> int:
+    """
+    Получим статус клиента
+    """
+    clients_last_update: int = sql_query_scalar(
+        """
+                    SELECT
+                        "Status"
+                    FROM
+                        "Client"
+                    WHERE
+                        "id" = %(client)s::bigint
+                """, {'client': client}
+    )
+
+    return clients_last_update
+
+def get_client_selected_entity(client_id: int) -> int:
+    """
+    Получим ид сущности которой будем делать изменения
+    """
+    result = sql_query_scalar(
+        f"""
+        SELECT
+            "SelectedEntity"
+        FROM
+            "Client"
+        WHERE
+            "id"=%(client)s::bigint
+        """, {"client": client_id}
+    )
+    return result

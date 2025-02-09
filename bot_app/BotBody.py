@@ -11,7 +11,7 @@ from bot_app.trains.utils import parse_file
 from . import base_names
 from bot_app.database import insert, select, delete, update
 from .schemas.Response import Msg
-from .trains import get_all_trains_for_keyboard, get_all_exercises_for_keyboard
+from .trains import get_all_trains_for_keyboard, get_all_exercises_for_keyboard, TrainOperations
 
 router = APIRouter()
 STARTED_TIME = datetime.now()
@@ -51,33 +51,61 @@ def get_updates():
 
             elif update_id <= client_data.get(client_id):
                 continue
+            client_status = select.get_client_status(client_id)
 
-            trains = get_all_trains_for_keyboard(client_id)
+            if client_status in base_names.TrainStatus.status_array:
+                text_msg, key_board = TrainOperations(client_id).get_operation(client_status, msg.text)
+            else:
+                trains = get_all_trains_for_keyboard(client_id)
 
-            if msg.text in ["/start", base_names.MAIN_MENU]:
-                text_msg = msg.text
-                key_board = base_names.StartButtons.buttons_array
+                if msg.text == "/start":
+                    continue
+                    text_msg = msg.text
+                    key_board = base_names.StartButtons.buttons_array
+                    insert.insert_client(msg, update_id)
+                elif msg.text == base_names.MAIN_MENU:
+                    text_msg = msg.text
+                    key_board = base_names.StartButtons.buttons_array
 
-                insert.insert_client(msg, update_id)
-            elif msg.text == base_names.StartButtons.trains:
-                if trains:
+                elif msg.text == base_names.StartButtons.set_trains:
+                    text_msg = msg.text
+                    key_board = base_names.TrainSettingsButton.buttons_array
+
+                elif msg.text == base_names.TrainSettingsButton.delete:
                     text_msg = msg.text
                     key_board = trains
-                else:
-                    text_msg = "Давайте добавим тренировку"
-                    key_board = None
-            elif msg.text in trains[:-1]:
-                text_msg = get_all_exercises_for_keyboard(client_id, msg.text)
-                key_board = trains
+                    update.update_client_status(client_id, base_names.TrainStatus.DELETE_TRAIN)
 
-            elif msg.text == base_names.StartButtons.statistic:
-                pass
-            elif msg.document is not None:
-                file = __download_file(msg.document)
-                train_obj = parse_file(file)
-                delete.delete_all_trains(client_id)
-                for train_name, train in train_obj.items():
-                    insert.insert_train(train_name, client_id, train)
+                elif msg.text == base_names.TrainSettingsButton.change:
+                    text_msg = msg.text
+                    key_board = trains
+                    update.update_client_status(client_id, base_names.TrainStatus.CHANGE_TRAIN)
+
+                elif msg.text == base_names.TrainSettingsButton.create:
+                    text_msg = "Введите название тренировки"
+                    key_board = base_names.StartButtons.buttons_array
+                    update.update_client_status(client_id, base_names.TrainStatus.CREATE_TRAIN)
+
+                elif msg.text == base_names.StartButtons.trains:
+                    if trains:
+                        text_msg = msg.text
+                        key_board = trains
+                    else:
+                        text_msg = "Давайте добавим тренировку"
+                        key_board = None
+
+                elif msg.text in trains[:-1]:
+                    text_msg = get_all_exercises_for_keyboard(client_id, msg.text)
+                    key_board = trains
+
+                elif msg.text == base_names.StartButtons.statistic:
+                    pass
+                elif msg.document is not None:
+                    file = __download_file(msg.document)
+                    train_obj = parse_file(file)
+                    delete.delete_all_trains(client_id)
+                    for train_name, train in train_obj.items():
+                        insert.insert_train(train_name, client_id, train)
             if text_msg is not None:
                 send_message(
                     chat_id=client_id,

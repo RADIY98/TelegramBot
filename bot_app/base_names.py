@@ -9,7 +9,31 @@ MAIN_MENU = "В главное меню"
 class StartButtons:
     trains = "Тренировки"
     statistic = "Статистика"
-    buttons_array = [trains, statistic]
+    set_trains = "Настроить тренировки"
+    buttons_array = [trains, statistic, set_trains]
+
+
+class TrainSettingsButton:
+    delete = "Удалить тренировку"
+    create = "Создать тренировку"
+    change = "Изменить тренировку"
+    main_menu = MAIN_MENU
+    buttons_array = [delete, create, change, MAIN_MENU]
+
+
+class SetTrainSettingsButtons:
+    change_exercise = "Добавить/изменить упражнение"
+    rename_train = "Изменить название тренировки"
+    add_exercise = "Добавить упражнение"
+    back_to_trains = "Обратно к тренировкам"
+    buttons_array = [change_exercise, rename_train, back_to_trains]
+
+class TrainStatus:
+    CHANGE_TRAIN = 1
+    DELETE_TRAIN = 2
+    CREATE_TRAIN = 3
+    RENAME_TRAIN = 4
+    status_array = [CREATE_TRAIN, DELETE_TRAIN, CHANGE_TRAIN, RENAME_TRAIN]
 
 
 # Пока просто захордкодим данные, чтобы не лехть
