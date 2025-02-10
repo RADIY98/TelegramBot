@@ -34,7 +34,7 @@ def __create_train_table() -> None:
         CREATE TABLE IF NOT EXISTS "Train" (
         "id" SERIAL PRIMARY KEY,
         "Name" text NOT NULL,
-        "ClientID" INTEGER NOT NULL REFERENCES "Client"(id)
+        "ClientID" INTEGER NOT NULL REFERENCES "Client"(id) ON DELETE CASCADE
         )
         """
     )
@@ -49,7 +49,7 @@ def __create_exercise_table() -> None:
         CREATE TABLE IF NOT EXISTS "Exercise" (
         "id" SERIAL PRIMARY KEY,
         "Name" text NOT NULL,
-        "TrainId" INTEGER NOT NULL REFERENCES "Train"(id),
+        "TrainId" INTEGER NOT NULL REFERENCES "Train"(id) ON DELETE CASCADE,
         "Settings" jsonb
         )
         """

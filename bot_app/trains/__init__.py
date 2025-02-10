@@ -10,11 +10,11 @@ from bot_app.database import sql_query_scalar
 class TrainOperations:
     def __init__(self, client_id: int):
         self.operation_by_status = {
-            base_names.TrainStatus.CHANGE_TRAIN: self.change_train,
-            base_names.TrainStatus.DELETE_TRAIN: self.delete_train,
-            base_names.TrainStatus.CREATE_TRAIN: self.create_train,
-            base_names.TrainStatus.RENAME_TRAIN: self.rename_train,
-            base_names.TrainStatus.CREATE_EXERCISE: self.create_exercise,
+            base_names.TrainStatus.CHANGE: self.change_train,
+            base_names.TrainStatus.DELETE: self.delete_train,
+            base_names.TrainStatus.CREATE: self.create_train,
+            base_names.TrainStatus.RENAME: self.rename_train,
+            base_names.ExerciseStatus.CREATE: self.create_exercise,
         }
         self.client_id = client_id
 
@@ -35,9 +35,9 @@ class TrainOperations:
         Создание тренировки
         """
         update.update_train(self.client_id, msg)
-        update.update_client_status(self.client_id, None)
-        update.drop_selected_entity(self.client_id)
-        return f'Тренировка "{msg}" успешно переименована', base_names.TrainSettingsButton.buttons_array
+        update.update_client_status(self.client_id, base_names.TrainStatus.CHANGE)
+
+        return f'Тренировка "{msg}" успешно переименована', base_names.SetTrainSettingsButtons.buttons_array
 
     def create_train(self, msg: str) -> (str, list):
         """
@@ -52,8 +52,8 @@ class TrainOperations:
         Добавить упражнение
         """
         insert.insert_exercise(self.client_id, msg)
-        update.update_client_status(self.client_id, None)
-        update.drop_selected_entity(self.client_id)
+        update.update_client_status(self.client_id, base_names.TrainStatus.CHANGE)
+
         return f'Упражнение - "{msg}" успешно добавлено', base_names.SetTrainSettingsButtons.buttons_array
 
     def change_train(self, msg: str) -> (str, list):
@@ -62,21 +62,24 @@ class TrainOperations:
         """
         keyboard = []
         selected_entity: int = select.get_client_selected_entity(self.client_id)
+        if msg == base_names.MAIN_MENU:
+            text_msg = ""
+            keyboard = base_names.StartButtons.buttons_array
         if selected_entity:
             if msg == base_names.SetTrainSettingsButtons.rename_train:
-                update.update_client_status(self.client_id, base_names.TrainStatus.RENAME_TRAIN)
+                text_msg = "Напишите новое название тренировки"
+                update.update_client_status(self.client_id, base_names.TrainStatus.RENAME)
                 keyboard = base_names.SetTrainSettingsButtons.buttons_array
             elif msg == base_names.SetTrainSettingsButtons.change_exercise:
                 pass
             elif msg == base_names.SetTrainSettingsButtons.add_exercise:
-                update.update_client_status(self.client_id, base_names.TrainStatus.CREATE_EXERCISE)
+                text_msg = "Напишите название упражнения"
+                update.update_client_status(self.client_id, base_names.ExerciseStatus.CREATE)
                 keyboard = base_names.SetTrainSettingsButtons.buttons_array
             elif msg == base_names.SetTrainSettingsButtons.back_to_trains:
+                text_msg = "Возвращаемся к тренировкам"
                 update.drop_selected_entity(self.client_id)
                 keyboard = get_all_trains_for_keyboard(self.client_id)
-
-
-            text_msg = "Тренировка успешно изменена"
 
         else:
             update.update_client_selected_entity(self.client_id, msg)

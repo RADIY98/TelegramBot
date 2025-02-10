@@ -53,7 +53,7 @@ def get_updates():
                 continue
             client_status = select.get_client_status(client_id)
 
-            if client_status in base_names.TrainStatus.status_array:
+            if client_status in base_names.AllStatus.status_array:
                 text_msg, key_board = TrainOperations(client_id).get_operation(client_status, msg.text)
             else:
                 trains = get_all_trains_for_keyboard(client_id)
@@ -74,17 +74,17 @@ def get_updates():
                 elif msg.text == base_names.TrainSettingsButton.delete:
                     text_msg = msg.text
                     key_board = trains
-                    update.update_client_status(client_id, base_names.TrainStatus.DELETE_TRAIN)
+                    update.update_client_status(client_id, base_names.TrainStatus.DELETE)
 
                 elif msg.text == base_names.TrainSettingsButton.change:
                     text_msg = msg.text
                     key_board = trains
-                    update.update_client_status(client_id, base_names.TrainStatus.CHANGE_TRAIN)
+                    update.update_client_status(client_id, base_names.TrainStatus.CHANGE)
 
                 elif msg.text == base_names.TrainSettingsButton.create:
                     text_msg = "Введите название тренировки"
                     key_board = base_names.StartButtons.buttons_array
-                    update.update_client_status(client_id, base_names.TrainStatus.CREATE_TRAIN)
+                    update.update_client_status(client_id, base_names.TrainStatus.CREATE)
 
                 elif msg.text == base_names.StartButtons.trains:
                     if trains:
@@ -95,8 +95,7 @@ def get_updates():
                         key_board = None
 
                 elif msg.text in trains[:-1]:
-                    text_msg = get_all_exercises_for_keyboard(client_id, msg.text)
-                    key_board = trains
+                    pass
 
                 elif msg.text == base_names.StartButtons.statistic:
                     pass
@@ -126,7 +125,7 @@ def _get_http_request() -> dict:
     Получим данные от ТГ
     """
     method = '/getUpdates'
-    params = {'limit': 100, "offset": base_names.global_id + 10}
+    params = {'limit': 100, "offset": base_names.global_id + 1}
     resp = requests.get(
         base_names.URL + base_names.TOKEN + method,
         params
