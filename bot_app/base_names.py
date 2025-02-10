@@ -22,18 +22,19 @@ class TrainSettingsButton:
 
 
 class SetTrainSettingsButtons:
-    change_exercise = "Добавить/изменить упражнение"
+    change_exercise = "Изменить упражнение"
     rename_train = "Изменить название тренировки"
     add_exercise = "Добавить упражнение"
     back_to_trains = "Обратно к тренировкам"
-    buttons_array = [change_exercise, rename_train, back_to_trains]
+    buttons_array = [change_exercise, rename_train, add_exercise, back_to_trains]
 
 class TrainStatus:
     CHANGE_TRAIN = 1
     DELETE_TRAIN = 2
     CREATE_TRAIN = 3
     RENAME_TRAIN = 4
-    status_array = [CREATE_TRAIN, DELETE_TRAIN, CHANGE_TRAIN, RENAME_TRAIN]
+    CREATE_EXERCISE = 5
+    status_array = [CREATE_TRAIN, DELETE_TRAIN, CHANGE_TRAIN, RENAME_TRAIN, CREATE_EXERCISE]
 
 
 # Пока просто захордкодим данные, чтобы не лехть
