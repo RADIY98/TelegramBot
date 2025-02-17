@@ -11,7 +11,8 @@ from bot_app.trains.utils import parse_file
 from . import base_names
 from bot_app.database import insert, select, delete, update
 from .schemas.Response import Msg
-from .trains import get_all_trains_for_keyboard, get_all_exercises_for_keyboard, TrainOperations
+from .operation.base import BaseOperation
+from .database.select import get_all_trains_for_keyboard
 
 router = APIRouter()
 STARTED_TIME = datetime.now()
@@ -53,10 +54,12 @@ def get_updates():
                 continue
             client_status = select.get_client_status(client_id)
 
-            if client_status in base_names.AllStatus.status_array:
-                text_msg, key_board = TrainOperations(client_id).get_operation(client_status, msg.text)
+            trains = get_all_trains_for_keyboard(client_id)
+            if client_status:
+                print(client_status)
+                print(msg)
+                text_msg, key_board = BaseOperation().call_method(client_id, client_status, msg)
             else:
-                trains = get_all_trains_for_keyboard(client_id)
 
                 if msg.text == "/start":
                     continue
@@ -106,6 +109,9 @@ def get_updates():
                     for train_name, train in train_obj.items():
                         insert.insert_train(train_name, client_id, train)
             if text_msg is not None:
+                print(f"Keyboard - {key_board}")
+                print(f"Text_msg - {text_msg}")
+
                 send_message(
                     chat_id=client_id,
                     text=text_msg,

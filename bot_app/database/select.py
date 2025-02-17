@@ -71,3 +71,76 @@ def get_client_selected_entity(client_id: int) -> int:
         """, {"client": client_id}
     )
     return result
+
+def exercise_by_train(client_id: int) -> List[str]:
+    """
+    Получить все упражнения по тренировки
+    """
+    result = sql_query_scalar(
+        """
+            SELECT
+                array_agg("Name")
+            FROM
+                "Exercise"
+            WHERE
+                "TrainId"=(SELECT "SelectedEntity" FROM "Client" WHERE "id"=%s::bigint)
+            GROUP BY
+                "TrainId"
+        """, [client_id]
+    )
+    return result
+
+def get_all_trains_for_keyboard(client_id) -> list:
+    """
+    Получить тренировку
+    """
+    result = sql_query_scalar(
+        """
+            SELECT
+                array_agg("Name")
+            FROM
+                "Train"
+            WHERE
+                "ClientID"=%s::bigint
+            GROUP BY
+                "ClientID"
+        """, [client_id]
+    )
+
+    return result if result else []
+
+
+def all_exercise_for_keyboard(train_id: int):
+    sql = """
+            SELECT
+                array_agg("Name")
+            FROM
+                "Exercise"
+            WHERE
+                "TrainId"=%s::bigint
+        """
+    result = sql_query_scalar(sql, [train_id])
+    return result
+
+def get_all_exercises_for_keyboard(train_id: int) -> str:
+    """
+    Получить тренировку
+    """
+    result = sql_query_scalar(
+        """
+            SELECT
+                "Settings"
+            FROM
+                "Exercise"
+            WHERE
+                "TrainId"=%s::bigint
+        """, [train_id]
+    )
+    msg = ""
+    for ex_name, ex_value in result.items():
+        if len(list(filter(None, ex_value))) > 1:
+            msg += f"{ex_name}: \n Веса - {','.join(i for i in ex_value[0])} \n Количество подходов - {','.join(i for i in ex_value[1])}\n\n"
+        else:
+            msg += f"{ex_name}: \nКоличество подходов - {','.join(i for i in ex_value[0])}\n\n"
+
+    return msg

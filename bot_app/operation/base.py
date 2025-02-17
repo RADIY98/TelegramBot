@@ -1,0 +1,45 @@
+from typing import List
+
+from bot_app import base_names
+from bot_app.operation.exercise import ExerciseOperation, ExerciseStatus
+from bot_app.operation.train import TrainOperation
+from bot_app.database.update import update_client_status
+from bot_app.database.select import all_exercise_for_keyboard, get_client_selected_entity
+
+class BaseOperation():
+    def call_method(self, client_id: int, client_status: int, msg) -> (str, List[str]):
+        text_msg = ""
+        key_board = []
+        if client_status == base_names.TrainStatus.CHANGE and \
+                msg.text == base_names.SetTrainSettingsButtons.add_exercise:
+            update_client_status(client_id, ExerciseStatus.CREATE)
+            text_msg = "Напишите название упражнения"
+            key_board = base_names.SetTrainSettingsButtons.buttons_array
+
+        elif client_status == base_names.TrainStatus.CHANGE and \
+                msg.text == base_names.SetTrainSettingsButtons.rename_train:
+            update_client_status(client_id, ExerciseStatus.RENAME)
+            text_msg = "Напишите новое название для тренировки"
+            key_board = base_names.SetTrainSettingsButtons.buttons_array
+
+        elif client_status == base_names.TrainStatus.CHANGE and \
+                msg.text == base_names.SetTrainSettingsButtons.change_exercise:
+            print("2")
+
+            update_client_status(client_id, ExerciseStatus.CHANGE)
+            text_msg = "Hello"
+            key_board = all_exercise_for_keyboard(
+                get_client_selected_entity(client_id)
+            )
+            print(key_board)
+
+        elif client_status == base_names.TrainStatus.RENAME:
+            text_msg, key_board = TrainOperation(client_id).rename(msg.text)
+
+        elif client_status in base_names.TrainStatus.status_array:
+            text_msg, key_board = TrainOperation(client_id).execute_method_by_status(client_status, msg.text)
+        elif client_status in base_names.ExerciseStatus.status_array:
+            text_msg, key_board = ExerciseOperation(client_id).execute_method_by_status(client_status, msg.text)
+
+
+        return text_msg, key_board
