@@ -1,9 +1,9 @@
 from . import Operation
 from ..database.insert import insert_exercise
-from ..database.update import update_client_status
+from ..database.update import update_client_status, update_client_selected_entity
 from ..database.delete import delete_exercise
-from ..database.select import exercise_by_train
-from ..base_names import TrainStatus, SetTrainSettingsButtons, ExerciseStatus
+from ..database.select import exercise_by_train, get_client_selected_entity, is_exercise
+from ..base_names import TrainStatus, SetTrainSettingsButtons, ExerciseStatus, SetExerciseSettingsButtons
 
 class ExerciseOperation(Operation):
     """
@@ -54,9 +54,13 @@ class ExerciseOperation(Operation):
         """
         text_msg = ""
         keyboard = []
-        if msg == SetTrainSettingsButtons.add_exercise:
-            text_msg = "Напишите название упражнения"
-            update_client_status(self.client_id, ExerciseStatus.CREATE)
-            keyboard = SetTrainSettingsButtons.buttons_array
+        selected_entity = get_client_selected_entity(self.client_id)
+
+        if is_exercise(selected_entity):
+            pass
+        else:
+            update_client_selected_entity(self.client_id, msg)
+            text_msg = f'Выбранно упражнение - "{msg}"'
+            keyboard = SetExerciseSettingsButtons.buttons_array
 
         return text_msg, keyboard

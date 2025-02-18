@@ -28,6 +28,15 @@ class SetTrainSettingsButtons:
     back_to_trains = "Обратно к тренировкам"
     buttons_array = [change_exercise, rename_train, add_exercise, back_to_trains]
 
+class SetExerciseSettingsButtons:
+    delete = "Удалить упражнение"
+    exercise_count = "Изменить количество подходов"
+    rename = "Переименовать упражнение"
+    weight = "Изменить вес"
+    back = "К упражнениям"
+    buttons_array = [delete, exercise_count, rename, weight, back]
+
+
 class TrainStatus:
     CHANGE = 1
     DELETE = 2

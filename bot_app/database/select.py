@@ -144,3 +144,19 @@ def get_all_exercises_for_keyboard(train_id: int) -> str:
             msg += f"{ex_name}: \nКоличество подходов - {','.join(i for i in ex_value[0])}\n\n"
 
     return msg
+
+def is_exercise(selected_entity: int) -> bool:
+    """
+    Метод определяет выбрана тренировка или нет
+    """
+    result = sql_query_scalar(
+        """
+            SELECT
+                1
+            FROM
+                "Exercise"
+            WHERE
+                "id"=%s::bigint
+        """, [selected_entity]
+    )
+    return result

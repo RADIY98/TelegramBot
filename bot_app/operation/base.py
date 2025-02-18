@@ -24,14 +24,10 @@ class BaseOperation():
 
         elif client_status == base_names.TrainStatus.CHANGE and \
                 msg.text == base_names.SetTrainSettingsButtons.change_exercise:
-            print("2")
-
             update_client_status(client_id, ExerciseStatus.CHANGE)
-            text_msg = "Hello"
             key_board = all_exercise_for_keyboard(
                 get_client_selected_entity(client_id)
             )
-            print(key_board)
 
         elif client_status == base_names.TrainStatus.RENAME:
             text_msg, key_board = TrainOperation(client_id).rename(msg.text)
