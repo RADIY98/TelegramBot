@@ -41,7 +41,7 @@ def update_client_status(client_id: int, client_status: int|None) -> None:
         """, (client_status, client_id)
     )
 
-def update_client_selected_entity(client_id: int, msg: int|None) -> None:
+def update_client_selected_entity(client_id: int, msg: str|None) -> None:
     """
     Обновлем ид выбранной сущности
     """
@@ -71,6 +71,20 @@ def update_client_selected_entity(client_id: int, msg: int|None) -> None:
         """, (msg, msg, client_id)
     )
 
+def update_selected_entity_by_id(client_id: int, concrete_id: int):
+    """
+    Обновляем выбранный ИД
+    """
+    sql_query(
+        """
+        UPDATE 
+            "Client"
+        SET
+            "SelectedEntity"=%s::int
+        WHERE
+            "id"=%s::bigint
+            """, [concrete_id, client_id]
+    )
 def drop_selected_entity(client_id: int) -> None:
     """
     Сбросим ид выбранной сущности, так как мы вышли в главное меню
@@ -98,4 +112,19 @@ def update_train(client_id: int, train_name: str) -> None:
         WHERE
             "id" = (SELECT "SelectedEntity" FROM "Client" WHERE "id"=%s::int)
     """, (train_name, client_id)
+    )
+
+def rename_exercise(exercise_name: str, selected_entity: int) -> None:
+    """
+    Переименовываем упражнения
+    """
+    sql_query(
+        """
+        UPDATE
+            "Exercise"
+        SET
+            "Name"=%s::text
+        WHERE
+            "id"=%s::int
+        """, [exercise_name, selected_entity]
     )

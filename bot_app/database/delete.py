@@ -1,7 +1,7 @@
 """
 модуль для удаления данных
 """
-from bot_app.database import sql_query
+from bot_app.database import sql_query, sql_query_record
 
 
 def delete_all_trains(client_id: int) -> None:
@@ -29,15 +29,19 @@ def delete_train(train_name: str) -> None:
         """, [train_name]
     )
 
-def delete_exercise(client_id: int) -> None:
+def delete_exercise(client_id: int) -> (str, int):
     """
     Удаление упражнения
     """
-    sql_query(
+    exercise = sql_query_record(
         """
         DELETE FROM
             "Exercise"
         WHERE
             "id"=(SELECT "SelectedEntity" FROM "Client" WHERE "id"=%s)
-        """, client_id
+        RETURNING
+            "Name",
+            "TrainId"
+        """, [client_id]
     )
+    return exercise.get("Name"), int(exercise.get("TrainId"))

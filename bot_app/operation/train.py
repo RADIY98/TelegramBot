@@ -61,7 +61,7 @@ class TrainOperation(Operation):
         keyboard = []
         selected_entity: int = get_client_selected_entity(self.client_id)
         if msg == MAIN_MENU:
-            text_msg = ""
+            text_msg = "Вернулись в начало"
             keyboard = StartButtons.buttons_array
         else:
             if selected_entity:

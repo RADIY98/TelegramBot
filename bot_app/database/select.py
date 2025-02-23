@@ -1,6 +1,6 @@
 from typing import List, Dict, Optional
 
-from bot_app.database import sql_query, sql_query_scalar
+from bot_app.database import sql_query, sql_query_scalar, sql_query_record
 
 
 def select_trains(client_id: int):
@@ -158,5 +158,22 @@ def is_exercise(selected_entity: int) -> bool:
             WHERE
                 "id"=%s::bigint
         """, [selected_entity]
+    )
+    return result
+
+
+def read_exercise(exercise_id: int) -> dict:
+    """
+    Прочитаем упражнение
+    """
+    result = sql_query_record(
+        """
+        SELECT
+            *
+        FROM 
+            "Exercise"
+        WHERE
+            "id" = %s::bigint
+            """, [exercise_id]
     )
     return result
