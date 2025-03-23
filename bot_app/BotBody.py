@@ -35,7 +35,7 @@ def get_updates():
     text_msg = None
     key_board = None
     response_list = _get_http_request()
-    print("F ntgthm!!!!")
+
     if response_list:
         client_data = select.get_clients_update_id(
             [record.get("message").get("chat").get("id") for record in response_list]
@@ -94,9 +94,12 @@ def get_updates():
                         text_msg = "Давайте добавим тренировку"
                         key_board = None
 
-                elif msg.text in trains[:-1]:
-                    pass
-
+                elif msg.text in trains:
+                    update.update_client_selected_entity(client_id, msg.text)
+                    update.update_client_status(client_id, base_names.EXERCISE_READ_STATUS)
+                    selected_entity = select.get_client_selected_entity(client_id)
+                    key_board = select.all_exercise_for_keyboard(selected_entity)
+                    text_msg = "Выбранная тренировка"
                 elif msg.text == base_names.StartButtons.statistic:
                     pass
                 elif msg.document is not None:

@@ -1,4 +1,4 @@
-global_id = 534311355
+global_id = 534311377
 
 TOKEN = "1083751838:AAG2uzNZMtbCcR3RmhNNCAG5Pd0lLSsID-E"
 URL = "https://api.telegram.org/bot"
@@ -51,6 +51,8 @@ class ExerciseStatus:
     UPDATE = 9
     status_array = [CREATE, RENAME, CHANGE, DELETE, UPDATE]
 
+
+EXERCISE_READ_STATUS = 10
 
 class AllStatus:
     status_array = TrainStatus.status_array + ExerciseStatus.status_array
