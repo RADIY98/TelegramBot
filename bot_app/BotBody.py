@@ -12,7 +12,6 @@ from . import base_names
 from bot_app.database import insert, select, delete, update
 from .schemas.Response import Msg
 from .operation.base import BaseOperation
-from .database.select import get_all_trains_for_keyboard
 
 router = APIRouter()
 STARTED_TIME = datetime.now()
@@ -36,6 +35,7 @@ def get_updates():
     text_msg = None
     key_board = None
     response_list = _get_http_request()
+    print("F ntgthm!!!!")
     if response_list:
         client_data = select.get_clients_update_id(
             [record.get("message").get("chat").get("id") for record in response_list]
@@ -54,13 +54,10 @@ def get_updates():
                 continue
             client_status = select.get_client_status(client_id)
 
-            trains = get_all_trains_for_keyboard(client_id)
+            trains = select.get_all_trains_for_keyboard(client_id)
             if client_status:
-                print(client_status)
-                print(msg)
                 text_msg, key_board = BaseOperation().call_method(client_id, client_status, msg)
             else:
-
                 if msg.text == "/start":
                     continue
                     text_msg = msg.text

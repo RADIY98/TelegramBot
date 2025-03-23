@@ -1,6 +1,15 @@
+import json
+
 from . import Operation
+from .. import base_names
 from ..database.insert import insert_exercise
-from ..database.update import update_client_status, update_client_selected_entity, update_selected_entity_by_id, rename_exercise
+from ..database.update import (
+    update_client_status,
+    update_client_selected_entity,
+    update_selected_entity_by_id,
+    rename_exercise,
+    set_exercise_settings
+)
 from ..database.delete import delete_exercise
 from ..database.select import get_client_selected_entity, is_exercise, all_exercise_for_keyboard, read_exercise
 from ..base_names import TrainStatus, SetTrainSettingsButtons, ExerciseStatus, SetExerciseSettingsButtons
@@ -24,6 +33,7 @@ class ExerciseOperation(Operation):
             ExerciseStatus.DELETE: self.delete,
             ExerciseStatus.CREATE: self.create,
             ExerciseStatus.RENAME: self.rename,
+            ExerciseStatus.UPDATE: self.update,
         }
         method = operation_by_status.get(status)
 
@@ -66,6 +76,10 @@ class ExerciseOperation(Operation):
         text_msg = ""
         keyboard = []
         selected_entity = get_client_selected_entity(self.client_id)
+        if msg == base_names.MAIN_MENU:
+            update_client_selected_entity(self.client_id, None)
+            update_client_status(self.client_id, None)
+            return "Вы в главном меню", base_names.StartButtons.buttons_array
 
         if is_exercise(selected_entity):
             if msg == SetExerciseSettingsButtons.delete:
@@ -79,10 +93,28 @@ class ExerciseOperation(Operation):
                 train_id: int = exercise.get("TrainId")
                 update_selected_entity_by_id(self.client_id, train_id)
                 text_msg, keyboard = "Вернулись к упражнениям", all_exercise_for_keyboard(train_id)
+            elif msg == SetExerciseSettingsButtons.change:
+                update_client_status(self.client_id, ExerciseStatus.UPDATE)
+                text_msg = "Напишите настройки упражнения в формате ВЕС: количество подходов через запятую"
+                keyboard = SetExerciseSettingsButtons.buttons_array
 
+        elif msg == base_names.NO_EXERCISE:
+            update_client_status(self.client_id, ExerciseStatus.CREATE)
+            text_msg = "Напишите название упражнения"
+            keyboard = base_names.SetTrainSettingsButtons.buttons_array
         else:
             update_client_selected_entity(self.client_id, msg)
             text_msg = f'Выбранно упражнение - "{msg}"'
             keyboard = SetExerciseSettingsButtons.buttons_array
 
         return text_msg, keyboard
+
+    def update(self, msg: str) -> (str, list):
+        """
+        Задать настройки тренировки
+        """
+        selected_entity = get_client_selected_entity(self.client_id)
+
+        set_exercise_settings(selected_entity, json.dumps(msg))
+        update_client_status(self.client_id, ExerciseStatus.CHANGE)
+        return "Настройки успешно обновлены", SetExerciseSettingsButtons.buttons_array

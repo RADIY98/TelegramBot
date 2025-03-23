@@ -1,6 +1,7 @@
 from typing import List
 
 from bot_app import base_names
+from bot_app.base_names import TrainStatus
 from bot_app.operation.exercise import ExerciseOperation, ExerciseStatus
 from bot_app.operation.train import TrainOperation
 from bot_app.database.update import update_client_status
@@ -18,7 +19,7 @@ class BaseOperation():
 
         elif client_status == base_names.TrainStatus.CHANGE and \
                 msg.text == base_names.SetTrainSettingsButtons.rename_train:
-            update_client_status(client_id, ExerciseStatus.RENAME)
+            update_client_status(client_id, TrainStatus.RENAME)
             text_msg = "Напишите новое название для тренировки"
             key_board = base_names.SetTrainSettingsButtons.buttons_array
 

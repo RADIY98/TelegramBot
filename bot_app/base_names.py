@@ -1,10 +1,10 @@
-global_id = 534311240
+global_id = 534311355
 
 TOKEN = "1083751838:AAG2uzNZMtbCcR3RmhNNCAG5Pd0lLSsID-E"
 URL = "https://api.telegram.org/bot"
 TEST_URL = "http://127.0.0.1/"
 MAIN_MENU = "В главное меню"
-
+NO_EXERCISE = "Давайте добавим упражнение"
 
 class StartButtons:
     trains = "Тренировки"
@@ -30,11 +30,10 @@ class SetTrainSettingsButtons:
 
 class SetExerciseSettingsButtons:
     delete = "Удалить упражнение"
-    exercise_count = "Изменить количество подходов"
     rename = "Переименовать упражнение"
-    weight = "Изменить вес"
+    change = "Изменить настройки упражнения"
     back = "К упражнениям"
-    buttons_array = [delete, exercise_count, rename, weight, back]
+    buttons_array = [delete, change, rename, back]
 
 
 class TrainStatus:
@@ -49,7 +48,8 @@ class ExerciseStatus:
     DELETE = 6
     CHANGE = 7
     RENAME = 8
-    status_array = [CREATE, RENAME, CHANGE, DELETE]
+    UPDATE = 9
+    status_array = [CREATE, RENAME, CHANGE, DELETE, UPDATE]
 
 
 class AllStatus:

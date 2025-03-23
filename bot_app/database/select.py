@@ -1,5 +1,6 @@
 from typing import List, Dict, Optional
 
+from bot_app import base_names
 from bot_app.database import sql_query, sql_query_scalar, sql_query_record
 
 
@@ -120,6 +121,9 @@ def all_exercise_for_keyboard(train_id: int):
                 "TrainId"=%s::bigint
         """
     result = sql_query_scalar(sql, [train_id])
+    if not result:
+        result = ["Давайте добавим упражнения"]
+    result.append(base_names.MAIN_MENU)
     return result
 
 def get_all_exercises_for_keyboard(train_id: int) -> str:

@@ -1,9 +1,10 @@
 """
 Модуль для обновления данных
 """
+import json
 from typing import List
 
-from bot_app.database import sql_query
+from bot_app.database import sql_query, sql_query_record
 
 
 def update_client_last_update(client_id: int, update_id: int) -> List[dict]:
@@ -127,4 +128,19 @@ def rename_exercise(exercise_name: str, selected_entity: int) -> None:
         WHERE
             "id"=%s::int
         """, [exercise_name, selected_entity]
+    )
+
+def set_exercise_settings(exercise_id: int, settings: json) -> None:
+    """
+    Задать настройки упражнения
+    """
+    sql_query_record(
+        """
+        UPDATE 
+            "Exercise"
+        SET
+            "Settings"=%s::jsonb
+        WHERE
+            "id"=%s::int
+        """, [settings, exercise_id]
     )
