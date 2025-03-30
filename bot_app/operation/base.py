@@ -1,10 +1,12 @@
 from typing import List
+import json
+from re import findall
 
 from bot_app import base_names
 from bot_app.base_names import TrainStatus
 from bot_app.operation.exercise import ExerciseOperation, ExerciseStatus
 from bot_app.operation.train import TrainOperation
-from bot_app.database.update import update_client_status
+from bot_app.database.update import update_client_status, set_exercise_settings
 from bot_app.database.select import all_exercise_for_keyboard, get_client_selected_entity, read_exercise
 
 class BaseOperation():
@@ -43,10 +45,21 @@ class BaseOperation():
             text_msg = "Выбранная тренировка"
 
         elif client_status == base_names.EXERCISE_READ_STATUS:
-            selected_entity = get_client_selected_entity(client_id)
-            exercise = read_exercise(selected_entity)
-            text_msg = exercise.get("Settings")
-            key_board = [base_names.SetExerciseSettingsButtons.back]
+            if findall(r"\d{,3}:", msg.text):
+                # значит апдейтим упражнение
+                selected_entity = get_client_selected_entity(client_id)
+                set_exercise_settings(selected_entity, json.dumps(msg.text))
+
+                exercise = read_exercise(selected_entity)
+                train_id = exercise.get("TrainId")
+
+                key_board = all_exercise_for_keyboard(train_id)
+                text_msg = "Выбранная тренировка"
+            else:
+                selected_entity = get_client_selected_entity(client_id)
+                exercise = read_exercise(selected_entity)
+                text_msg = exercise.get("Settings")
+                key_board = [base_names.SetExerciseSettingsButtons.back]
 
 
         return text_msg, key_board

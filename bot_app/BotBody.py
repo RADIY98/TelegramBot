@@ -59,7 +59,6 @@ def get_updates():
                 text_msg, key_board = BaseOperation().call_method(client_id, client_status, msg)
             else:
                 if msg.text == "/start":
-                    continue
                     text_msg = msg.text
                     key_board = base_names.StartButtons.buttons_array
                     insert.insert_client(msg, update_id)
