@@ -1,4 +1,5 @@
 import json
+from typing import List
 
 from . import Operation
 from .. import base_names
@@ -118,3 +119,40 @@ class ExerciseOperation(Operation):
         set_exercise_settings(selected_entity, json.dumps(msg))
         update_client_status(self.client_id, ExerciseStatus.CHANGE)
         return "Настройки успешно обновлены", SetExerciseSettingsButtons.buttons_array
+
+class Exercise:
+    """
+    Класс с форматом упражнения
+    """
+    def __init__(self, exercise: dict):
+        self._id: int = exercise.get("Id")
+        self.name: str = exercise.get("Name")
+        self.split_settings: dict = self.__split_settings(exercise.get("Settings"))
+        self.train: str = exercise.get("TrainId")
+
+    @staticmethod
+    def __split_settings(settings: str) -> dict:
+        """
+        Внутренний метод для парсинга настроек упражнения
+        """
+        split_result = {}
+
+        split_settings: List[str] = settings.split("/n")
+        print(split_settings)
+        for row in split_settings:
+            print(row)
+            split_row: List[str] = row.split(":")
+            split_result[split_row[0]] = split_row[1]
+
+        return split_result
+
+    def get_exercise_str(self) -> str:
+        """
+        Получить настройки упражнения в виде отформатированной строки
+        """
+        result = f'Упражнение - {self.name}\n' + \
+                  "\n\n".join(
+                      f"Вес - {count} \nКоличество подходов - {value}" for count, value in self.split_settings.items()
+                  )
+
+        return result

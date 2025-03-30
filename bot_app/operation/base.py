@@ -8,6 +8,7 @@ from bot_app.operation.exercise import ExerciseOperation, ExerciseStatus
 from bot_app.operation.train import TrainOperation
 from bot_app.database.update import update_client_status, set_exercise_settings
 from bot_app.database.select import all_exercise_for_keyboard, get_client_selected_entity, read_exercise
+from bot_app.operation.exercise import Exercise
 
 class BaseOperation():
     def call_method(self, client_id: int, client_status: int, msg) -> (str, List[str]):
@@ -57,8 +58,7 @@ class BaseOperation():
                 text_msg = "Выбранная тренировка"
             else:
                 selected_entity = get_client_selected_entity(client_id)
-                exercise = read_exercise(selected_entity)
-                text_msg = exercise.get("Settings")
+                text_msg = Exercise(read_exercise(selected_entity)).get_exercise_str()
                 key_board = [base_names.SetExerciseSettingsButtons.back]
 
 
