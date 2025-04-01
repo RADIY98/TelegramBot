@@ -1,10 +1,18 @@
-global_id = 534311377
+global_id = 534311410
 
 TOKEN = "1083751838:AAG2uzNZMtbCcR3RmhNNCAG5Pd0lLSsID-E"
 URL = "https://api.telegram.org/bot"
 TEST_URL = "http://127.0.0.1/"
+
 MAIN_MENU = "В главное меню"
+BACK_TO_MAIN_MENU = "Вы в главном меню"
 NO_EXERCISE = "Давайте добавим упражнение"
+LETS_SET_TRAIN_FROM_LIST = "Давайте настроим тренировки\nВыберите тренировку из списка"
+ENTER_TRAIN_NAME = "Введите название тренировки"
+CHOOSE_TRAIN_FROM_LIST = "Выберите тренировку из списка"
+LETS_CREATE_TRAIN = "Давайте добавим тренировку"
+SELECTED_TRAIN = 'Вы выбрали тренировку - "{}"'
+UPDATED_EXERCISE = 'Настройки упражнения успешно сохранены\n'
 
 class StartButtons:
     trains = "Тренировки"

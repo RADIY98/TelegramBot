@@ -6,30 +6,41 @@ from bot_app import base_names
 from bot_app.base_names import TrainStatus
 from bot_app.operation.exercise import ExerciseOperation, ExerciseStatus
 from bot_app.operation.train import TrainOperation
-from bot_app.database.update import update_client_status, set_exercise_settings
-from bot_app.database.select import all_exercise_for_keyboard, get_client_selected_entity, read_exercise
+from bot_app.database.update import update_client_status, set_exercise_settings, update_client_selected_entity
+from bot_app.database.select import all_exercise_for_keyboard, get_client_selected_entity, read_exercise, read_train
 from bot_app.operation.exercise import Exercise
 
-class BaseOperation():
+
+class BaseOperation:
+    WRITE_EXERCISE_NAME = "Напишите название упражнения"
+    WRITE_NEW_TRAIN_NAME = "Напишите новое название для тренировки"
+    CHOOSE_EXERCISE_FROM_LIST = "Выберите упражнение из списка"
+    SELECTED_TRAIN = 'Вы выбрали тренировку - "{}"'
+
+
     def call_method(self, client_id: int, client_status: int, msg) -> (str, List[str]):
         text_msg = ""
         key_board = []
+        if msg.text == base_names.MAIN_MENU:
+            update_client_selected_entity(client_id, None)
+            update_client_status(client_id, None)
+            return base_names.BACK_TO_MAIN_MENU, base_names.StartButtons.buttons_array
         if client_status == base_names.TrainStatus.CHANGE and \
                 msg.text == base_names.SetTrainSettingsButtons.add_exercise:
             update_client_status(client_id, ExerciseStatus.CREATE)
-            text_msg = "Напишите название упражнения"
+            text_msg = self.WRITE_EXERCISE_NAME
             key_board = base_names.SetTrainSettingsButtons.buttons_array
 
         elif client_status == base_names.TrainStatus.CHANGE and \
                 msg.text == base_names.SetTrainSettingsButtons.rename_train:
             update_client_status(client_id, TrainStatus.RENAME)
-            text_msg = "Напишите новое название для тренировки"
+            text_msg = self.WRITE_NEW_TRAIN_NAME
             key_board = base_names.SetTrainSettingsButtons.buttons_array
 
         elif client_status == base_names.TrainStatus.CHANGE and \
                 msg.text == base_names.SetTrainSettingsButtons.change_exercise:
             update_client_status(client_id, ExerciseStatus.CHANGE)
-            text_msg = "Выберите упражнение"
+            text_msg = self.CHOOSE_EXERCISE_FROM_LIST
             key_board = all_exercise_for_keyboard(
                 get_client_selected_entity(client_id)
             )
@@ -43,7 +54,7 @@ class BaseOperation():
             exercise = read_exercise(selected_entity)
             train_id = exercise.get("TrainId")
             key_board = all_exercise_for_keyboard(train_id)
-            text_msg = "Выбранная тренировка"
+            text_msg = self.SELECTED_TRAIN.format(TrainOperation(client_id).read(train_id))
 
         elif client_status == base_names.EXERCISE_READ_STATUS:
             if findall(r"\d{,3}:", msg.text):
@@ -55,7 +66,11 @@ class BaseOperation():
                 train_id = exercise.get("TrainId")
 
                 key_board = all_exercise_for_keyboard(train_id)
-                text_msg = "Выбранная тренировка"
+                text_msg = (
+                    f"{base_names.UPDATED_EXERCISE}"
+                    f"{base_names.SELECTED_TRAIN.format(TrainOperation(client_id).read(train_id))}"
+                )
+
             else:
                 selected_entity = get_client_selected_entity(client_id)
                 text_msg = Exercise(read_exercise(selected_entity)).get_exercise_str()

@@ -149,7 +149,7 @@ def get_all_exercises_for_keyboard(train_id: int) -> str:
 
     return msg
 
-def is_exercise(selected_entity: int) -> bool:
+def is_exercise(exercise_name: str) -> bool:
     """
     Метод определяет выбрана тренировка или нет
     """
@@ -160,9 +160,10 @@ def is_exercise(selected_entity: int) -> bool:
             FROM
                 "Exercise"
             WHERE
-                "id"=%s::bigint
-        """, [selected_entity]
+                "Name"=%s::text
+        """, [exercise_name]
     )
+    print(result)
     return result
 
 
@@ -179,5 +180,22 @@ def read_exercise(exercise_id: int) -> dict:
         WHERE
             "id" = %s::bigint
             """, [exercise_id]
+    )
+    return result
+
+def read_train(client_id: int, train_id: int) -> dict:
+    """
+    Прочитать тренировку
+    """
+    result = sql_query_record(
+        """        
+        SELECT
+            *
+        FROM 
+            "Train"
+        WHERE
+            "id" = %s::bigint AND
+            "ClientID"=%s::bigint
+            """, [train_id, client_id]
     )
     return result
