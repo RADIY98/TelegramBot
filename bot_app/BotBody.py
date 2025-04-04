@@ -6,12 +6,15 @@ from datetime import datetime
 
 import requests
 from fastapi import APIRouter
-from bot_app.KeyBoard import KeyBoard
-from bot_app.trains.utils import parse_file
-from . import base_names
-from bot_app.database import insert, select, delete, update
+
+from .KeyBoard import KeyBoard
+from .utils import parse_file
+from .database import insert, select, delete, update
+from .operation.train import TrainOperation
 from .schemas.Response import Msg
 from .operation.base import BaseOperation
+from . import base_names
+
 
 router = APIRouter()
 STARTED_TIME = datetime.now()
@@ -67,7 +70,7 @@ def get_updates():
                     key_board = base_names.StartButtons.buttons_array
 
                 elif msg.text == base_names.StartButtons.set_trains:
-                    text_msg = msg.text
+                    text_msg = base_names.LETS_SET_TRAIN_FROM_LIST
                     key_board = base_names.TrainSettingsButton.buttons_array
 
                 elif msg.text == base_names.TrainSettingsButton.delete:
@@ -81,24 +84,24 @@ def get_updates():
                     update.update_client_status(client_id, base_names.TrainStatus.CHANGE)
 
                 elif msg.text == base_names.TrainSettingsButton.create:
-                    text_msg = "Введите название тренировки"
+                    text_msg = base_names.ENTER_TRAIN_NAME
                     key_board = base_names.StartButtons.buttons_array
                     update.update_client_status(client_id, base_names.TrainStatus.CREATE)
 
                 elif msg.text == base_names.StartButtons.trains:
                     if trains:
-                        text_msg = msg.text
+                        text_msg = base_names.CHOOSE_TRAIN_FROM_LIST
                         key_board = trains
                     else:
-                        text_msg = "Давайте добавим тренировку"
+                        text_msg = base_names.LETS_CREATE_TRAIN
                         key_board = None
 
                 elif msg.text in trains:
                     update.update_client_selected_entity(client_id, msg.text)
                     update.update_client_status(client_id, base_names.EXERCISE_READ_STATUS)
-                    selected_entity = select.get_client_selected_entity(client_id)
-                    key_board = select.all_exercise_for_keyboard(selected_entity)
-                    text_msg = "Выбранная тренировка"
+                    train_id = select.get_client_selected_entity(client_id)
+                    key_board = select.all_exercise_for_keyboard(train_id)
+                    text_msg = base_names.SELECTED_TRAIN.format(TrainOperation(client_id).read(train_id))
                 elif msg.text == base_names.StartButtons.statistic:
                     pass
                 elif msg.document is not None:
@@ -119,8 +122,8 @@ def get_updates():
                 )
 
             res = update.update_client_last_update(client_id, update_id)
-            print(res)
-            send_message(chat_id=client_id, text=f"{client_id}, {update_id}")
+            # print(res)
+            # send_message(chat_id=client_id, text=f"{client_id}, {update_id}")
 
     return response_list
 
