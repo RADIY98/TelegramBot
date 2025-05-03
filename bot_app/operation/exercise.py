@@ -62,7 +62,7 @@ class ExerciseOperation(Operation):
         Удаление упражнения
         """
         exercise_name, train_id = delete_exercise(self.client_id)
-        update_selected_entity_by_id(exercise_name, train_id)
+        update_selected_entity_by_id(self.client_id, train_id)
         update_client_status(self.client_id, ExerciseStatus.CHANGE)
 
         return self.EXERCISE_DELETED.format(exercise_name)

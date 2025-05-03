@@ -11,7 +11,7 @@ class KeyBoard:
     Класс отвечающий за отображение клавиатуры
     """
 
-    def __init__(self, buttons):
+    def __init__(self, buttons: List[str]):
         self.buttons: List[str] = buttons
 
     def get_keyboard(self):
