@@ -1,10 +1,48 @@
 from psycopg2 import connect
+from ..base_names import DbUser, DB_PASSWORD
 
 
 def init_tables():
+    __create_custom_user()
     __create_client_table()
     __create_train_table()
     __create_exercise_table()
+
+
+def __create_custom_user():
+    """
+    СОздаем нового пользователя в БД для безопасности
+    """
+    connection = connect(f"dbname=telegram_bot_db user='postgres' host=postgres password={DB_PASSWORD} port=5432")
+    # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
+    is_role_exist = False
+    cursor = connection.cursor()
+    cursor.execute(
+        f"""
+           SELECT 1 FROM pg_roles WHERE rolname = '{DbUser.DB_ROLE}'
+        """
+    )
+    if cursor.description:
+        data = cursor.fetchone()
+        is_role_exist = data[0] if data else False
+    if not is_role_exist:
+        cursor.execute(f"""
+            -- 2. Создаём отдельного пользователя для работы с БД  
+            CREATE USER {DbUser.DB_ROLE} WITH LOGIN PASSWORD '{DbUser.ADMIN_PASSWORD}';  
+            
+            -- 3. Даём права только на нужные БД  
+            GRANT CONNECT, CREATE ON DATABASE telegram_bot_db TO {DbUser.DB_ROLE};  
+            
+            -- 4. Даём права на схемы и таблицы (но не на всё подряд)  
+            GRANT USAGE, CREATE ON SCHEMA public TO {DbUser.DB_ROLE};  
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO {DbUser.DB_ROLE};  
+            
+            -- 5. Отзываем опасные права у суперпользователя (если нужно)  
+            ALTER USER postgres WITH NOSUPERUSER;  -- оставляем только для админских задач  
+            """)
+
+    cursor.close()
+    connection.commit()
 
 
 def __create_client_table() -> None:
@@ -60,7 +98,7 @@ def sql_query(sql_request: str, *args):
     """
     Выполняем запрос к бд
     """
-    connection = connect("dbname=telegram_bot_db user=postgres host=postgres password=postgres port=5432")
+    connection = connect(f"dbname=telegram_bot_db user={DbUser.DB_ROLE} host=postgres password={DbUser.ADMIN_PASSWORD} port=5432")
     # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
     result_list = []
     dict_value = {}
@@ -91,7 +129,7 @@ def sql_query_record(sql_tmpl: str, params = None) -> dict:
     :param args: args
     :return:
     """
-    connection = connect("dbname=telegram_bot_db user=postgres host=postgres password=postgres port=5432")
+    connection = connect(f"dbname=telegram_bot_db user={DbUser.DB_ROLE} host=postgres password={DbUser.ADMIN_PASSWORD} port=5432")
     # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
 
     result = {}
@@ -119,7 +157,7 @@ def sql_query_scalar(sql_tmpl: str, args):
     :return:
     """
     result = {}
-    connection = connect("dbname=telegram_bot_db user=postgres host=postgres password=postgres port=5432")
+    connection = connect(f"dbname=telegram_bot_db user={DbUser.DB_ROLE} host=postgres password={DbUser.ADMIN_PASSWORD} port=5432")
     # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
 
     cursor = connection.cursor()

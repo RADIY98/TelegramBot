@@ -1,8 +1,14 @@
 global_id = 534311410
 
-TOKEN = "1083751838:AAGjSMrNR450BpNqhhpsh2rUL_DmQ-9OhPs"
+TOKEN = "1083751838:AAGYO7eAqtntiN9rLlG2vPI9t2V2Asv2uus"
 URL = "https://api.telegram.org/bot"
 TEST_URL = "http://127.0.0.1/"
+
+class DbUser:
+    DB_ROLE = "admin"
+    ADMIN_PASSWORD = "Trepol845"
+
+DB_PASSWORD = "k02bkhBM"
 
 MAIN_MENU = "В главное меню"
 BACK_TO_MAIN_MENU = "Вы в главном меню"
