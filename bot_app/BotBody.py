@@ -138,7 +138,11 @@ def _get_http_request() -> dict:
         base_names.URL + base_names.TOKEN + method,
         params
     )
-    result_list = resp.json()['result']
+    print(f"ALARM - {resp.json().get('result')}")
+    if resp.json().get('result'):
+        result_list = resp.json()['result']
+    else:
+        result_list = {}
 
     return result_list
 
