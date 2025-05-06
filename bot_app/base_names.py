@@ -1,6 +1,6 @@
 global_id = 534311410
 
-TOKEN = "1083751838:AAGYO7eAqtntiN9rLlG2vPI9t2V2Asv2uus"
+TOKEN = "1083751838:AAHDmNofD5GYqF9E40o-g5bfp7xfPbmg9MQ"
 URL = "https://api.telegram.org/bot"
 TEST_URL = "http://127.0.0.1/"
 
