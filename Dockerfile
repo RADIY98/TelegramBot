@@ -45,8 +45,7 @@ USER appuser
 COPY . .
 
 # Expose the port that the application listens on.
-EXPOSE 8080
 EXPOSE 443
 
 # Run the application.
-CMD uvicorn 'bot_app:app' --host=0.0.0.0 --reload --port=443 --reload
+uvicorn main:app --host 0.0.0.0 --port 443 --ssl-keyfile=key.pem --ssl-certfile=cert.pem
