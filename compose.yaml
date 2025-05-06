@@ -22,7 +22,7 @@ services:
     build:
       context: .
     ports:
-      - 8080:8080
+      - 443:443
     volumes:
       - ./bot_app:/app/bot_app/
 volumes:
