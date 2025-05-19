@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 import requests
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from .KeyBoard import KeyBoard
 from .utils import parse_file
@@ -32,15 +32,16 @@ async def loong_pool_request():
 
 
 @router.post(r"/bot")
-def get_updates(response_list):
+def get_updates(request: Request):
     """
     Метод получения обновлений
     """
     text_msg = None
     key_board = None
     # response_list = _get_http_request()
+    response_list = request.json()
     print(response_list)
-    if response_list:
+    if False:
         client_data = select.get_clients_update_id(
             [record.get("message").get("chat").get("id") for record in response_list]
         )
