@@ -49,6 +49,6 @@ EXPOSE 443
 
 # Run the application.
 CMD uvicorn 'bot_app:app' --host 0.0.0.0 --port 443 \
-  --ssl-keyfile=/etc/letsencrypt/live/yourdomain.com/privkey.pem \
-  --ssl-certfile=/etc/letsencrypt/live/yourdomain.com/fullchain.pem
+  --ssl-keyfile=/etc/letsencrypt/live/rad1y.ru/privkey.pem \
+  --ssl-certfile=/etc/letsencrypt/live/rad1y.ru/fullchain.pem
 
