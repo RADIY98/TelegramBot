@@ -123,7 +123,9 @@ async def get_updates(request: Request):
         except Exception as e:
             return JSONResponse(
                 content={
-                    "ok": True
+                    "ok": True,
+                    "text": "У нас проблемы",
+                    "chat_id": record.get("message").get("chat").get("id"),
                 }
             )
     return JSONResponse(
