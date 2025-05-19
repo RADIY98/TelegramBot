@@ -4,59 +4,6 @@ from bot_app import base_names
 from bot_app.database import sql_query, sql_query_scalar, sql_query_record
 
 
-def select_trains(client_id: int):
-    sql_query(
-        f"""
-            SELECT
-                *
-            FROM
-                "Train"
-            WHERE
-                "ClientID"={client_id}::int    
-        """
-    )
-
-def get_client_update_id(client: int) -> Dict[int, int]:
-    """
-    Получим данные клиентов из БД
-    """
-    clients_last_update: Optional[dict] = sql_query_scalar(
-        """
-                    SELECT
-                        jsonb_build_object(
-                            "id"::bigint, "UpdateId"::bigint
-                        ) AS Result
-                    FROM
-                        "Client"
-                    WHERE
-                        "id" = %(client)s::bigint
-                """, {'client': client}
-    )
-    if clients_last_update:
-        clients_last_update = {int(key): value for key, value in clients_last_update.items()}
-    else:
-        clients_last_update = {}
-
-    return clients_last_update
-
-
-def get_client_status(client: int) -> int:
-    """
-    Получим статус клиента
-    """
-    clients_last_update: int = sql_query_scalar(
-        """
-                    SELECT
-                        "Status"
-                    FROM
-                        "Client"
-                    WHERE
-                        "id" = %(client)s::bigint
-                """, {'client': client}
-    )
-
-    return clients_last_update
-
 def get_client_selected_entity(client_id: int) -> int:
     """
     Получим ид сущности которой будем делать изменения
@@ -197,5 +144,35 @@ def read_train(client_id: int, train_id: int) -> dict:
             "id" = %s::bigint AND
             "ClientID"=%s::bigint
             """, [train_id, client_id]
+    )
+    return result
+
+def get_client_data(client_id: int) -> dict:
+    """
+    Получить разом информацию по клиенту
+    """
+    result = sql_query_record(
+        """
+        WITH trains AS (
+            SELECT
+                array_agg("Name")
+            FROM
+                "Train"
+            WHERE 
+                "ClientID"=%s::bigint
+            GROUP BY
+                "ClientID"
+        )
+        SELECT
+            "id"::bigint,
+            "UpdateId"::bigint,
+            "Status"::int,
+            "SelectedEntity"::bigint,
+            (SELECT * FROM trains) "Trains"
+        FROM
+            "Client"
+        WHERE
+            "id" = %s::bigint
+        """, [client_id, client_id]
     )
     return result
