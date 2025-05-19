@@ -16,7 +16,7 @@ def select_trains(client_id: int):
         """
     )
 
-def get_clients_update_id(clients: List[int]) -> Dict[int, int]:
+def get_clients_update_id(client: int) -> Dict[int, int]:
     """
     Получим данные клиентов из БД
     """
@@ -29,8 +29,8 @@ def get_clients_update_id(clients: List[int]) -> Dict[int, int]:
                     FROM
                         "Client"
                     WHERE
-                        "id" = ANY(%(clients)s::bigint[])
-                """, {'clients': clients}
+                        "id" = %(clients)s::bigint
+                """, {'client': client}
     )
     if clients_last_update:
         clients_last_update = {int(key): value for key, value in clients_last_update.items()}
