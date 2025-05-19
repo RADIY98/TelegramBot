@@ -33,7 +33,7 @@ async def get_updates(request: Request):
     record = await request.json()
     print(record)
     if record:
-        client_data = select.get_clients_update_id(
+        client_data = select.get_client_update_id(
             record.get("message").get("chat").get("id")
         )
 
