@@ -1,5 +1,6 @@
 import asyncio
 import json
+from fastapi.responses import JSONResponse
 import os
 
 from datetime import datetime
@@ -125,8 +126,20 @@ def get_updates(response_list):
             # print(res)
             # send_message(chat_id=client_id, text=f"{client_id}, {update_id}")
 
-    return response_list
+            return JSONResponse(
+                content={
+                    "ok": True,
+                    "chat_id": client_id,
+                    "text": text_msg,
+                    "reply_markup": json.dumps({'keyboard': KeyBoard(key_board).get_keyboard()})
+                }
+            )
 
+    return JSONResponse(
+        content={
+            "ok": True
+        }
+    )
 
 def _get_http_request() -> dict:
     """
