@@ -104,6 +104,7 @@ def sql_query(sql_request: str, *args):
     dict_value = {}
 
     print(sql_request)
+    print(args)
     cursor = connection.cursor()
     cursor.execute(sql_request, *args)
     if cursor.description:
@@ -129,6 +130,7 @@ def sql_query_record(sql_tmpl: str, params = None) -> dict:
     # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
 
     print(sql_tmpl)
+    print(params)
     result = {}
 
     cursor = connection.cursor()
@@ -157,6 +159,7 @@ def sql_query_scalar(sql_tmpl: str, args):
     connection = connect(f"dbname=telegram_bot_db user={DbUser.DB_ROLE} host=postgres password={DbUser.ADMIN_PASSWORD} port=5432")
     # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
     print(sql_tmpl)
+    print(params)
     cursor = connection.cursor()
     cursor.execute(sql_tmpl, args)
     if cursor.description:
