@@ -31,7 +31,7 @@ async def loong_pool_request():
         get_updates()
 
 
-@router.get(r"/bot")
+@router.post(r"/bot")
 def get_updates(response_list):
     """
     Метод получения обновлений
