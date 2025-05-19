@@ -124,14 +124,11 @@ def sql_query(sql_request: str, *args):
 def sql_query_record(sql_tmpl: str, params = None) -> dict:
     """
     SQL request to DB
-
-    :param sql_tmpl: SQL template
-    :param args: args
-    :return:
     """
     connection = connect(f"dbname=telegram_bot_db user={DbUser.DB_ROLE} host=postgres password={DbUser.ADMIN_PASSWORD} port=5432")
     # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
 
+    print(sql_tmpl)
     result = {}
 
     cursor = connection.cursor()
@@ -159,7 +156,7 @@ def sql_query_scalar(sql_tmpl: str, args):
     result = {}
     connection = connect(f"dbname=telegram_bot_db user={DbUser.DB_ROLE} host=postgres password={DbUser.ADMIN_PASSWORD} port=5432")
     # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
-
+    print(sql_tmpl)
     cursor = connection.cursor()
     cursor.execute(sql_tmpl, args)
     if cursor.description:
