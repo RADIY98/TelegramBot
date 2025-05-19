@@ -136,8 +136,10 @@ def sql_query_record(sql_tmpl: str, params = None) -> dict:
     cursor = connection.cursor()
     cursor.execute(sql_tmpl, params)
     if cursor.description:
-        data = cursor.fetchone()
         fields = [column.name for column in cursor.description]
+        data = cursor.fetchone()
+        if not data:
+            data = [None for _ in fields]
         for fields_name, value in zip(fields, data):
             result[fields_name] = value
 
