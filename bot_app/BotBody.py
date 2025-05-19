@@ -31,15 +31,16 @@ async def loong_pool_request():
         get_updates()
 
 
+
 @router.post(r"/bot")
-def get_updates(request: Request):
+async def get_updates(request: Request):
     """
     Метод получения обновлений
     """
     text_msg = None
     key_board = None
     # response_list = _get_http_request()
-    response_list = request.json()
+    response_list = await request.json()
     print(response_list)
     if False:
         client_data = select.get_clients_update_id(
