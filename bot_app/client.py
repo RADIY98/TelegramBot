@@ -21,6 +21,6 @@ class Client:
         """
         client_info = select.get_client_data(self.client_id)
         self.update_id = client_info['UpdateId']
-        self.trains = client_info['Trains']
+        self.trains = client_info['Trains'] if client_info['Trains'] else []
         self.status = client_info['Status']
         self.selected_entity = client_info['SelectedEntity']
