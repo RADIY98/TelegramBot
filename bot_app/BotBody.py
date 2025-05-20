@@ -53,7 +53,7 @@ async def get_updates(request: Request):
                 text_msg, key_board = BaseOperation(client_obj).call_method(msg)
             else:
                 if msg.text == base_names.MAIN_MENU:
-                    text_msg = msg.text
+                    text_msg = base_names.BACK_TO_MAIN_MENU
                     key_board = base_names.StartButtons.buttons_array
 
                 elif msg.text == base_names.StartButtons.set_trains:
@@ -61,12 +61,12 @@ async def get_updates(request: Request):
                     key_board = base_names.TrainSettingsButton.buttons_array
 
                 elif msg.text == base_names.TrainSettingsButton.delete:
-                    text_msg = msg.text
+                    text_msg = base_names.GOING_TO_DELETE
                     key_board = client_obj.trains
                     update.update_client_status(client_id, base_names.TrainStatus.DELETE)
 
                 elif msg.text == base_names.TrainSettingsButton.change:
-                    text_msg = msg.text
+                    text_msg = base_names.GOING_TO_CHANGE
                     key_board = client_obj.trains
                     update.update_client_status(client_id, base_names.TrainStatus.CHANGE)
 
