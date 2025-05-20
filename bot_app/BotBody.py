@@ -122,8 +122,7 @@ async def get_updates(request: Request):
             return JSONResponse(
                 content={
                     "ok": True,
-                    "text": f"{e}",
-                    "chat_id": record.get("message").get("chat").get("id"),
+                    "text": f"{e}"
                 }
             )
     return JSONResponse(
