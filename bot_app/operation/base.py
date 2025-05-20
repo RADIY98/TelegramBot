@@ -4,6 +4,7 @@ from re import findall
 
 from bot_app import base_names
 from bot_app.base_names import TrainStatus
+from bot_app.client import Client
 from bot_app.operation.exercise import ExerciseOperation, ExerciseStatus
 from bot_app.operation.train import TrainOperation
 from bot_app.database.update import update_client_status, set_exercise_settings, update_client_selected_entity
@@ -17,64 +18,69 @@ class BaseOperation:
     CHOOSE_EXERCISE_FROM_LIST = "Выберите упражнение из списка"
     SELECTED_TRAIN = 'Вы выбрали тренировку - "{}"'
 
+    def __init__(self, client_obj: Client):
+        self.client_obj = client_obj
 
-    def call_method(self, client_id: int, client_status: int, msg) -> (str, List[str]):
+    def call_method(self, msg) -> (str, List[str]):
         text_msg = ""
-        print(f"ВОТ так вот {client_status}  {msg.text}")
+        print(f"ВОТ так вот {self.client_obj.status}  {msg.text}")
         key_board = []
         if msg.text == base_names.MAIN_MENU:
-            update_client_selected_entity(client_id, None)
-            update_client_status(client_id, None)
+            update_client_selected_entity(self.client_obj.client_id, None)
+            update_client_status(self.client_obj.client_id, None)
             return base_names.BACK_TO_MAIN_MENU, base_names.StartButtons.buttons_array
-        if client_status == base_names.TrainStatus.CHANGE and \
+        if self.client_obj.status == base_names.TrainStatus.CHANGE and \
                 msg.text == base_names.SetTrainSettingsButtons.add_exercise:
-            update_client_status(client_id, ExerciseStatus.CREATE)
+            update_client_status(self.client_obj.client_id, ExerciseStatus.CREATE)
             text_msg = self.WRITE_EXERCISE_NAME
             key_board = base_names.SetTrainSettingsButtons.buttons_array
 
-        elif client_status == base_names.TrainStatus.CHANGE and \
+        elif self.client_obj.status == base_names.TrainStatus.CHANGE and \
                 msg.text == base_names.SetTrainSettingsButtons.rename_train:
-            update_client_status(client_id, TrainStatus.RENAME)
+            update_client_status(self.client_obj.client_id, TrainStatus.RENAME)
             text_msg = self.WRITE_NEW_TRAIN_NAME
             key_board = base_names.SetTrainSettingsButtons.buttons_array
 
-        elif client_status == base_names.TrainStatus.CHANGE and \
+        elif self.client_obj.status == base_names.TrainStatus.CHANGE and \
                 msg.text == base_names.SetTrainSettingsButtons.change_exercise:
-            update_client_status(client_id, ExerciseStatus.CHANGE)
+            update_client_status(self.client_obj.client_id, ExerciseStatus.CHANGE)
             text_msg = self.CHOOSE_EXERCISE_FROM_LIST
             key_board = all_exercise_for_keyboard(
-                get_client_selected_entity(client_id)
+                get_client_selected_entity(self.client_obj.client_id)
             )
 
-        elif client_status in base_names.TrainStatus.status_array:
-            text_msg, key_board = TrainOperation(client_id).execute_method_by_status(client_status, msg.text)
-        elif client_status in base_names.ExerciseStatus.status_array:
-            text_msg, key_board = ExerciseOperation(client_id).execute_method_by_status(client_status, msg.text)
-        elif client_status == base_names.EXERCISE_READ_STATUS and msg.text == base_names.SetExerciseSettingsButtons.back:
-            selected_entity = get_client_selected_entity(client_id)
-            exercise = read_exercise(selected_entity)
+        elif self.client_obj.status in base_names.TrainStatus.status_array:
+            text_msg, key_board = TrainOperation(self.client_obj.client_id).execute_method_by_status(
+                self.client_obj.status,
+                msg.text
+            )
+        elif self.client_obj.status in base_names.ExerciseStatus.status_array:
+            text_msg, key_board = ExerciseOperation(self.client_obj.client_id).execute_method_by_status(
+                self.client_obj.status,
+                msg.text
+            )
+        elif self.client_obj.status == base_names.EXERCISE_READ_STATUS and msg.text == base_names.SetExerciseSettingsButtons.back:
+            exercise = read_exercise(self.client_obj.selected_entity)
             train_id = exercise.get("TrainId")
             key_board = all_exercise_for_keyboard(train_id)
-            text_msg = self.SELECTED_TRAIN.format(TrainOperation(client_id).read(train_id))
+            text_msg = self.SELECTED_TRAIN.format(TrainOperation(self.client_obj.client_id).read(train_id))
 
-        elif client_status == base_names.EXERCISE_READ_STATUS:
+        elif self.client_obj.status == base_names.EXERCISE_READ_STATUS:
             if findall(r"\d{,3}:", msg.text):
                 # значит апдейтим упражнение
-                selected_entity = get_client_selected_entity(client_id)
-                set_exercise_settings(selected_entity, json.dumps(msg.text))
+                set_exercise_settings(self.client_obj.selected_entity, json.dumps(msg.text))
 
-                exercise = read_exercise(selected_entity)
+                exercise = read_exercise(self.client_obj.selected_entity)
                 train_id = exercise.get("TrainId")
 
                 key_board = all_exercise_for_keyboard(train_id)
                 text_msg = (
                     f"{base_names.UPDATED_EXERCISE}"
-                    f"{base_names.SELECTED_TRAIN.format(TrainOperation(client_id).read(train_id))}"
+                    f"{base_names.SELECTED_TRAIN.format(TrainOperation(self.client_obj.client_id).read(train_id))}"
                 )
 
             else:
-                selected_entity = get_client_selected_entity(client_id)
-                text_msg = Exercise(read_exercise(selected_entity)).get_exercise_str()
+                text_msg = Exercise(read_exercise(self.client_obj.selected_entity)).get_exercise_str()
                 key_board = [base_names.SetExerciseSettingsButtons.back]
 
 

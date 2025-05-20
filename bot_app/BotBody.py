@@ -35,21 +35,21 @@ async def get_updates(request: Request):
     print(record)
     if record:
         try:
-            client_data = Client(record.get("message").get("chat").get("id"))
+            client_obj = Client(record.get("message").get("chat").get("id"))
 
             msg: Msg = Msg(record.get("message"))
             client_id = msg.chat.id
             update_id = record.get("update_id")
             print(update_id)
 
-            if not client_data.update_id:
+            if not client_obj.update_id:
                 insert.insert_client(msg, update_id)
 
-            elif update_id <= client_data.update_id:
+            elif update_id <= client_obj.update_id:
                 pass
 
-            if client_data.status:
-                text_msg, key_board = BaseOperation().call_method(client_id, client_data.status, msg)
+            if client_obj.status:
+                text_msg, key_board = BaseOperation(client_obj).call_method(msg)
             else:
                 if msg.text == "/start":
                     text_msg = msg.text
@@ -65,12 +65,12 @@ async def get_updates(request: Request):
 
                 elif msg.text == base_names.TrainSettingsButton.delete:
                     text_msg = msg.text
-                    key_board = client_data.trains
+                    key_board = client_obj.trains
                     update.update_client_status(client_id, base_names.TrainStatus.DELETE)
 
                 elif msg.text == base_names.TrainSettingsButton.change:
                     text_msg = msg.text
-                    key_board = client_data.trains
+                    key_board = client_obj.trains
                     update.update_client_status(client_id, base_names.TrainStatus.CHANGE)
 
                 elif msg.text == base_names.TrainSettingsButton.create:
@@ -79,14 +79,14 @@ async def get_updates(request: Request):
                     update.update_client_status(client_id, base_names.TrainStatus.CREATE)
 
                 elif msg.text == base_names.StartButtons.trains:
-                    if client_data.trains:
+                    if client_obj.trains:
                         text_msg = base_names.CHOOSE_TRAIN_FROM_LIST
-                        key_board = client_data.trains
+                        key_board = client_obj.trains
                     else:
                         text_msg = base_names.LETS_CREATE_TRAIN
                         key_board = []
 
-                elif msg.text in client_data.trains:
+                elif msg.text in client_obj.trains:
                     update.update_client_selected_entity(client_id, msg.text)
                     update.update_client_status(client_id, base_names.EXERCISE_READ_STATUS)
                     train_id = select.get_client_selected_entity(client_id)
