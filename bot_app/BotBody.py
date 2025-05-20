@@ -22,8 +22,6 @@ STARTED_TIME = datetime.now()
 path = os.path.realpath("bot_app")
 
 
-# TODO ПРИ ПОДКЛЮЧЕНИЕ К БОТУ СДЕЛАТЬ ПРОКИДЫВАНИЕ КНОПОК
-
 @router.post(r"/bot")
 async def get_updates(request: Request):
     """
@@ -45,6 +43,8 @@ async def get_updates(request: Request):
 
             if not client_obj.update_id:
                 insert.insert_client(msg, update_id)
+                text_msg = base_names.WELCOME_MESSAGE
+                key_board = base_names.StartButtons.buttons_array
 
             elif update_id <= client_obj.update_id:
                 pass
