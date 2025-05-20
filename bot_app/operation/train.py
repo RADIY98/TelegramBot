@@ -67,6 +67,7 @@ class TrainOperation(Operation):
         """
         keyboard = []
         selected_entity: int = get_client_selected_entity(self.client_id)
+        print(f"Я тута {selected_entity}")
         if msg == MAIN_MENU:
             text_msg = base_names.BACK_TO_MAIN_MENU
             keyboard = StartButtons.buttons_array
