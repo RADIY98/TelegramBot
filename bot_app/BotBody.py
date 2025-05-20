@@ -35,7 +35,8 @@ async def get_updates(request: Request):
     print(record)
     if record:
         try:
-            client_obj = Client(record.get("message").get("chat").get("id"))
+            message = record.get("message") if record.get("message") else record.get("my_chat_member")
+            client_obj = Client(message.get("chat").get("id"))
 
             msg: Msg = Msg(record.get("message"))
             client_id = msg.chat.id
@@ -51,11 +52,7 @@ async def get_updates(request: Request):
             if client_obj.status:
                 text_msg, key_board = BaseOperation(client_obj).call_method(msg)
             else:
-                if msg.text == "/start":
-                    text_msg = msg.text
-                    key_board = base_names.StartButtons.buttons_array
-                    insert.insert_client(msg, update_id)
-                elif msg.text == base_names.MAIN_MENU:
+                if msg.text == base_names.MAIN_MENU:
                     text_msg = msg.text
                     key_board = base_names.StartButtons.buttons_array
 
