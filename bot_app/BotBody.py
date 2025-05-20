@@ -89,7 +89,8 @@ async def get_updates(request: Request):
                 elif msg.text in client_data.trains:
                     update.update_client_selected_entity(client_id, msg.text)
                     update.update_client_status(client_id, base_names.EXERCISE_READ_STATUS)
-                    key_board = select.all_exercise_for_keyboard(client_data.selected_entity)
+                    train_id = select.get_client_selected_entity(client_id)
+                    key_board = select.all_exercise_for_keyboard(train_id)
                     text_msg = base_names.SELECTED_TRAIN.format(TrainOperation(client_id).read(client_data.selected_entity))
                 elif msg.text == base_names.StartButtons.statistic:
                     pass
