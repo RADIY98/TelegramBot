@@ -161,7 +161,7 @@ def sql_query_scalar(sql_tmpl: str, args):
     connection = connect(f"dbname=telegram_bot_db user={DbUser.DB_ROLE} host=postgres password={DbUser.ADMIN_PASSWORD} port=5432")
     # connection = connect("dbname=telegram_bot_db user=postgres password=postgres port=5432")
     print(sql_tmpl)
-    print(params)
+    print(args)
     cursor = connection.cursor()
     cursor.execute(sql_tmpl, args)
     if cursor.description:
