@@ -20,6 +20,7 @@ class BaseOperation:
 
     def call_method(self, client_id: int, client_status: int, msg) -> (str, List[str]):
         text_msg = ""
+        print(f"ВОТ так вот {client_status}  {msg.text}")
         key_board = []
         if msg.text == base_names.MAIN_MENU:
             update_client_selected_entity(client_id, None)

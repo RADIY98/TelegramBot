@@ -66,6 +66,7 @@ class TrainOperation(Operation):
         Изменение настроек тренировки
         """
         keyboard = []
+        print("Зашли")
         selected_entity: int = get_client_selected_entity(self.client_id)
         print(f"Я тута {selected_entity}")
         if msg == MAIN_MENU:
