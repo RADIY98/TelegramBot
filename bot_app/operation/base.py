@@ -8,7 +8,7 @@ from bot_app.client import Client
 from bot_app.operation.exercise import ExerciseOperation, ExerciseStatus
 from bot_app.operation.train import TrainOperation
 from bot_app.database.update import update_client_status, set_exercise_settings, update_client_selected_entity
-from bot_app.database.select import all_exercise_for_keyboard, get_client_selected_entity, read_exercise, read_train
+from bot_app.database import select
 from bot_app.operation.exercise import Exercise
 
 
@@ -45,9 +45,7 @@ class BaseOperation:
                 msg.text == base_names.SetTrainSettingsButtons.change_exercise:
             update_client_status(self.client_obj.client_id, ExerciseStatus.CHANGE)
             text_msg = self.CHOOSE_EXERCISE_FROM_LIST
-            key_board = all_exercise_for_keyboard(
-                get_client_selected_entity(self.client_obj.client_id)
-            )
+            key_board = select.all_exercise_for_keyboard(self.client_obj.selected_entity)
 
         elif self.client_obj.status in base_names.TrainStatus.status_array:
             text_msg, key_board = TrainOperation(self.client_obj.client_id).execute_method_by_status(
@@ -60,9 +58,9 @@ class BaseOperation:
                 msg.text
             )
         elif self.client_obj.status == base_names.EXERCISE_READ_STATUS and msg.text == base_names.SetExerciseSettingsButtons.back:
-            exercise = read_exercise(self.client_obj.selected_entity)
+            exercise = select.read_exercise(self.client_obj.selected_entity)
             train_id = exercise.get("TrainId")
-            key_board = all_exercise_for_keyboard(train_id)
+            key_board = select.all_exercise_for_keyboard(train_id)
             text_msg = self.SELECTED_TRAIN.format(TrainOperation(self.client_obj.client_id).read(train_id))
 
         elif self.client_obj.status == base_names.EXERCISE_READ_STATUS:
@@ -70,17 +68,17 @@ class BaseOperation:
                 # значит апдейтим упражнение
                 set_exercise_settings(self.client_obj.selected_entity, json.dumps(msg.text))
 
-                exercise = read_exercise(self.client_obj.selected_entity)
+                exercise = select.read_exercise(self.client_obj.selected_entity)
                 train_id = exercise.get("TrainId")
 
-                key_board = all_exercise_for_keyboard(train_id)
+                key_board = select.all_exercise_for_keyboard(train_id)
                 text_msg = (
                     f"{base_names.UPDATED_EXERCISE}"
                     f"{base_names.SELECTED_TRAIN.format(TrainOperation(self.client_obj.client_id).read(train_id))}"
                 )
 
             else:
-                text_msg = Exercise(read_exercise(self.client_obj.selected_entity)).get_exercise_str()
+                text_msg = Exercise(select.read_exercise(self.client_obj.selected_entity)).get_exercise_str()
                 key_board = [base_names.SetExerciseSettingsButtons.back]
 
 

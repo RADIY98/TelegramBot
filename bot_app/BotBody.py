@@ -91,7 +91,7 @@ async def get_updates(request: Request):
                     update.update_client_status(client_id, base_names.EXERCISE_READ_STATUS)
                     train_id = select.get_client_selected_entity(client_id)
                     key_board = select.all_exercise_for_keyboard(train_id)
-                    text_msg = base_names.SELECTED_TRAIN.format(TrainOperation(client_id).read(client_data.selected_entity))
+                    text_msg = base_names.SELECTED_TRAIN.format(TrainOperation(client_id).read(train_id))
                 elif msg.text == base_names.StartButtons.statistic:
                     pass
                 elif msg.document is not None:
