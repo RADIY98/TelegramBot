@@ -2,7 +2,7 @@
 """
 Модуль для вставки записей в БД
 """
-import json
+from ..database import sql_query
 
 from bot_app import base_names
 from bot_app.database import sql_query
@@ -14,7 +14,7 @@ def insert_client(msg: Msg, update_id: int) -> None:
     Добавляем клиента в БД
     """
     sql_query(
-        f"""
+        """
                     INSERT INTO
                         "Client"
                     VALUES 
@@ -30,6 +30,9 @@ def insert_client(msg: Msg, update_id: int) -> None:
 
 
 def insert_train(client_id: int, train_name: str) -> None:
+    """
+    Добавить тренировку
+    """
     sql_query(
     """
         INSERT INTO
@@ -48,6 +51,9 @@ def insert_train(client_id: int, train_name: str) -> None:
 
 
 def insert_exercise(client_id: int, exercise_name: str) -> None:
+    """
+    Добавить упражнение
+    """
     sql_query(
     """
         INSERT INTO

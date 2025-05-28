@@ -4,7 +4,7 @@
 import json
 from typing import List
 
-from bot_app.database import sql_query, sql_query_record
+from ..database import sql_query, sql_query_record
 
 
 def update_client_last_update(client_id: int, update_id: int) -> List[dict]:
@@ -105,7 +105,7 @@ def update_train(client_id: int, train_name: str) -> None:
     """
     Обновим название тренировки
     """
-    sql_query(f"""
+    sql_query("""
         UPDATE
             "Train"
         SET

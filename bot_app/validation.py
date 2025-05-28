@@ -4,8 +4,8 @@ Module for validating data
 __author__ = "Nelidov N.N."
 
 
-from pydantic import BaseModel, Field
 from datetime import datetime
+from pydantic import BaseModel, Field
 
 
 class MessageFrom(BaseModel):

@@ -1,7 +1,7 @@
-from typing import List, Dict, Optional
+from typing import List
 
-from bot_app import base_names
-from bot_app.database import sql_query, sql_query_scalar, sql_query_record
+from .. import base_names
+from ..database import sql_query_scalar, sql_query_record
 
 
 def get_client_selected_entity(client_id: int) -> int:
@@ -9,7 +9,7 @@ def get_client_selected_entity(client_id: int) -> int:
     Получим ид сущности которой будем делать изменения
     """
     result = sql_query_scalar(
-        f"""
+        """
         SELECT
             "SelectedEntity"
         FROM
@@ -90,7 +90,8 @@ def get_all_exercises_for_keyboard(train_id: int) -> str:
     msg = ""
     for ex_name, ex_value in result.items():
         if len(list(filter(None, ex_value))) > 1:
-            msg += f"{ex_name}: \n Веса - {','.join(i for i in ex_value[0])} \n Количество подходов - {','.join(i for i in ex_value[1])}\n\n"
+            msg += (f"{ex_name}: \n Веса - {','.join(i for i in ex_value[0])} \n "
+                    f"Количество подходов - {','.join(i for i in ex_value[1])}\n\n")
         else:
             msg += f"{ex_name}: \nКоличество подходов - {','.join(i for i in ex_value[0])}\n\n"
 

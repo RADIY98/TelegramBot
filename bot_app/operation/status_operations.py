@@ -2,17 +2,20 @@ from typing import List
 import json
 from re import findall
 
-from bot_app import base_names
-from bot_app.base_names import TrainStatus
-from bot_app.client import Client
-from bot_app.operation.exercise import ExerciseOperation, ExerciseStatus
-from bot_app.operation.train import TrainOperation
-from bot_app.database.update import update_client_status, set_exercise_settings, update_client_selected_entity
-from bot_app.database import select
-from bot_app.operation.exercise import Exercise
+from .. import base_names
+from ..base_names import TrainStatus
+from ..client import Client
+from ..operation.exercise import ExerciseOperation, ExerciseStatus
+from ..operation.train import TrainOperation
+from ..database.update import update_client_status, set_exercise_settings, update_client_selected_entity
+from ..database import select
+from ..operation.exercise import Exercise
 
 
 class BaseOperation:
+    """
+    Базовый метод для операций по статусам
+    """
     WRITE_EXERCISE_NAME = "Напишите название упражнения"
     WRITE_NEW_TRAIN_NAME = "Напишите новое название для тренировки"
     CHOOSE_EXERCISE_FROM_LIST = "Выберите упражнение из списка"

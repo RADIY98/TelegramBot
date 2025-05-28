@@ -38,4 +38,3 @@ class InlineKeyBoard:
 
     def get_keyboard(self):
         return [[InlineKeyboardButton(text=key).text] for key in self.buttons]
-

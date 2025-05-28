@@ -4,6 +4,9 @@
 from .database import select
 
 class Client:
+    """
+    Класс клиента
+    """
     def __init__(self, client_id: int):
         """
         Инициализация объекта

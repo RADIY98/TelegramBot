@@ -1,10 +1,15 @@
-global_id = 534311410
+from dataclasses import dataclass
+
 
 TOKEN = "1083751838:AAGQS1h7DIwe4xblTOIMnmCjUPcHRxtC6qE"
 URL = "https://api.telegram.org/bot"
 TEST_URL = "http://127.0.0.1/"
 
+@dataclass
 class DbUser:
+    """
+    Настройки пользователя для доступа к бд
+    """
     DB_ROLE = "admin"
     ADMIN_PASSWORD = "Trepol845"
 
@@ -21,19 +26,28 @@ SELECTED_TRAIN = 'Вы выбрали тренировку - "{}"'
 UPDATED_EXERCISE = 'Настройки упражнения успешно сохранены\n'
 WELCOME_MESSAGE = (
     "Добро пожаловать. "
-    "Данный бот предназначен для тренировок. Здесь вы можете расписать тренировки и упражнения к ним"
+    "Данный бот предназначен для тренировок. "
+    "Здесь вы можете расписать тренировки и упражнения к ним"
 )
 GOING_TO_DELETE = "Какую тренировку удаляем?"
 GOING_TO_CHANGE = "Выберите из списка, что вы хотите изменить"
 
+@dataclass
 class StartButtons:
+    """
+    Стартовый набор кнопок
+    """
     trains = "Тренировки"
     statistic = "Статистика"
     set_trains = "Настроить тренировки"
     buttons_array = [trains, statistic, set_trains]
 
 
+@dataclass
 class TrainSettingsButton:
+    """
+    Набор кнопок для изменения тренировок
+    """
     delete = "Удалить тренировку"
     create = "Создать тренировку"
     change = "Изменить тренировку"
@@ -41,14 +55,23 @@ class TrainSettingsButton:
     buttons_array = [delete, create, change, MAIN_MENU]
 
 
+@dataclass
 class SetTrainSettingsButtons:
+    """
+    Набор кнопок для изменения тренировок
+    """
     change_exercise = "Изменить упражнение"
     rename_train = "Изменить название тренировки"
     add_exercise = "Добавить упражнение"
     back_to_trains = "Обратно к тренировкам"
     buttons_array = [change_exercise, rename_train, add_exercise, back_to_trains]
 
+
+@dataclass
 class SetExerciseSettingsButtons:
+    """
+    Набор кнопок для изменения упражнения
+    """
     delete = "Удалить упражнение"
     rename = "Переименовать упражнение"
     change = "Изменить настройки упражнения"
@@ -56,14 +79,23 @@ class SetExerciseSettingsButtons:
     buttons_array = [delete, change, rename, back]
 
 
+@dataclass
 class TrainStatus:
+    """
+    Статусы тренировок
+    """
     CHANGE = 1
     DELETE = 2
     CREATE = 3
     RENAME = 4
     status_array = [CREATE, DELETE, CHANGE, RENAME]
 
+
+@dataclass
 class ExerciseStatus:
+    """
+    Статусы упражнений
+    """
     CREATE = 5
     DELETE = 6
     CHANGE = 7
@@ -73,6 +105,3 @@ class ExerciseStatus:
 
 
 EXERCISE_READ_STATUS = 10
-
-class AllStatus:
-    status_array = TrainStatus.status_array + ExerciseStatus.status_array

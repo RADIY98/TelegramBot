@@ -1,28 +1,31 @@
 from abc import ABCMeta, abstractmethod
 
 class Operation:
+    """
+    Абстрактный класс операций
+    """
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def create(self, msg: str):
+    def create(self):
         """
         Создание
         """
 
     @abstractmethod
-    def delete(self, msg: str):
+    def delete(self):
         """
         Удаление
         """
 
     @abstractmethod
-    def change(self, msg: str):
+    def change(self):
         """
         Изменение
         """
 
     @abstractmethod
-    def rename(self, msg: str):
+    def rename(self):
         """
         Изменить название
         """
