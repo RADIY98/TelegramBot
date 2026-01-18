@@ -21,7 +21,7 @@ class TrainOperation(Operation):
         self.client_id = client_id
 
 
-    def execute_method_by_status(self, status: int, msg: str) -> (str, list):
+    def handler(self, status: int, msg: str) -> (str, list):
         """
         Сопоставим статусу нужный метод
         """

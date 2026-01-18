@@ -1,31 +1,29 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
+from typing import Tuple
 
-class Operation:
-    """
-    Абстрактный класс операций
-    """
-    __metaclass__ = ABCMeta
+
+class Operation(ABC):
 
     @abstractmethod
-    def create(self):
-        """
-        Создание
-        """
+    def handler(self, status: int, msg: str) -> Tuple[str, list]:
+        ...
 
     @abstractmethod
-    def delete(self):
-        """
-        Удаление
-        """
+    def create(self,  msg: str) -> Tuple[str, list]:
+        ...
 
     @abstractmethod
-    def change(self):
-        """
-        Изменение
-        """
+    def delete(self, msg: str) -> Tuple[str, list]:
+        ...
 
     @abstractmethod
-    def rename(self):
-        """
-        Изменить название
-        """
+    def change(self, msg: str) -> Tuple[str, list]:
+        ...
+
+    @abstractmethod
+    def rename(self, msg: str) -> Tuple[str, list]:
+        ...
+
+    @abstractmethod
+    def update(self, msg: str) -> Tuple[str, list]:
+        ...

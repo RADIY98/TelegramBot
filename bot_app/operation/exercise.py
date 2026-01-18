@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import List, Tuple
 
 from . import Operation
 from .. import base_names
@@ -33,7 +33,7 @@ class ExerciseOperation(Operation):
         """
         self.client_id = client_id
 
-    def execute_method_by_status(self, status: int, msg: str) -> (str, list):
+    def handler(self, status: int, msg: str) -> Tuple[str, list]:
         """
         Сопоставим статусу нужный метод
         """
@@ -48,7 +48,7 @@ class ExerciseOperation(Operation):
 
         return method(msg)
 
-    def create(self, msg: str) -> (str, list):
+    def create(self, msg: str) -> Tuple[str, list]:
         """
         Добавить упражнение
         """
@@ -57,7 +57,7 @@ class ExerciseOperation(Operation):
 
         return self.EXERCISE_CREATED.format(msg), SetTrainSettingsButtons.buttons_array
 
-    def delete(self, msg: str) -> (str, list):
+    def delete(self, msg: str) -> str:
         """
         Удаление упражнения
         """
@@ -67,18 +67,18 @@ class ExerciseOperation(Operation):
 
         return self.EXERCISE_DELETED.format(exercise_name)
 
-    def rename(self, msg: str) -> (str, list):
+    def rename(self, new_name: str) -> Tuple[str, list]:
         """
         Переименовать упражнение
         """
         update_client_status(self.client_id, ExerciseStatus.CHANGE)
         selected_entity = get_client_selected_entity(self.client_id)
 
-        rename_exercise(msg, selected_entity)
+        rename_exercise(new_name, selected_entity)
 
         return "Упражнение переименовано", SetExerciseSettingsButtons.buttons_array
 
-    def change(self, msg: str) -> (str, list):
+    def change(self, msg: str) -> Tuple[str, list]:
         """
         Изменить упражнение
         """
@@ -119,7 +119,7 @@ class ExerciseOperation(Operation):
 
         return text_msg, keyboard
 
-    def update(self, msg: str) -> (str, list):
+    def update(self, msg: str) -> Tuple[str, list]:
         """
         Задать настройки тренировки
         """

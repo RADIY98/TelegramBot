@@ -51,12 +51,12 @@ class BaseOperation:
             key_board = select.all_exercise_for_keyboard(self.client_obj.selected_entity)
 
         elif self.client_obj.status in base_names.TrainStatus.status_array:
-            text_msg, key_board = TrainOperation(self.client_obj.client_id).execute_method_by_status(
+            text_msg, key_board = TrainOperation(self.client_obj.client_id).handler(
                 self.client_obj.status,
                 msg.text
             )
         elif self.client_obj.status in base_names.ExerciseStatus.status_array:
-            text_msg, key_board = ExerciseOperation(self.client_obj.client_id).execute_method_by_status(
+            text_msg, key_board = ExerciseOperation(self.client_obj.client_id).handler(
                 self.client_obj.status,
                 msg.text
             )
