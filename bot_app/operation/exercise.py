@@ -136,21 +136,22 @@ class Exercise:
     def __init__(self, exercise: dict):
         self._id: int = exercise.get("Id")
         self.name: str = exercise.get("Name")
-        self.split_settings: Dict[str, str] = self.__split_settings(exercise.get("Settings"))
+        self.split_settings: Dict[str, str] = self.split_settings(exercise.get("Settings"))
         self.train: str = exercise.get("TrainId")
 
     @staticmethod
-    def __split_settings(settings: str) -> dict:
+    def split_settings(settings: str) -> Dict[str, str]:
         """
         Внутренний метод для парсинга настроек упражнения
         """
         split_result = {}
+        if not settings:
+            raise Exception("Not transmitted parameter - Settings")
 
         split_settings: List[str] = settings.split("/n")
-        print(split_settings)
         for row in split_settings:
-            print(row)
             split_row: List[str] = row.split(":")
+            split_row = list(map(str.strip, split_row))
             split_result[split_row[0]] = split_row[1]
 
         return split_result

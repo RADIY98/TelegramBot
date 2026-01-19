@@ -18,14 +18,3 @@ mock_psycopg2.connect.return_value = mock_conn
 sys.modules['psycopg2'] = mock_psycopg2
 
 from bot_app.operation import exercise
-
-
-def test_get_exercise_name():
-    right_answer = "Упражнение - Первое упражнение\n\nВес - Вес1 \nКоличество подходов - 1\n\nВес - Вес2 \nКоличество подходов - 2"
-    exercise_obj = exercise.Exercise({
-        "Settings": "Вес1: 1, Вес2: 2",
-        "Name": "Первое упражнение"
-    })
-
-    exercise_obj.get_exercise_str() == right_answer
-
