@@ -9,11 +9,10 @@ from fastapi import APIRouter, Request
 
 from .KeyBoard import KeyBoard
 from .client import Client
-from .utils import parse_file
-from .database import insert, select, delete, update
+from .database import insert, select, update
 from .operation.train import TrainOperation
 from .schemas.Response import Msg
-from .operation.base import BaseOperation
+from .operation.status_operations import BaseOperation
 from . import base_names
 
 
@@ -91,12 +90,7 @@ async def get_updates(request: Request):
                     text_msg = base_names.SELECTED_TRAIN.format(TrainOperation(client_id).read(train_id))
                 elif msg.text == base_names.StartButtons.statistic:
                     pass
-                elif msg.document is not None:
-                    file = __download_file(msg.document)
-                    train_obj = parse_file(file)
-                    delete.delete_all_trains(client_id)
-                    for train_name, train in train_obj.items():
-                        insert.insert_train(train_name, client_id, train)
+
             if text_msg is not None:
                 print(f"Keyboard - {key_board}")
                 print(f"Text_msg - {text_msg}")

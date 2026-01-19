@@ -1,5 +1,5 @@
 import json
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from . import Operation
 from .. import base_names
@@ -136,7 +136,7 @@ class Exercise:
     def __init__(self, exercise: dict):
         self._id: int = exercise.get("Id")
         self.name: str = exercise.get("Name")
-        self.split_settings: dict = self.__split_settings(exercise.get("Settings"))
+        self.split_settings: Dict[str, str] = self.__split_settings(exercise.get("Settings"))
         self.train: str = exercise.get("TrainId")
 
     @staticmethod

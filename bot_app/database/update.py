@@ -2,7 +2,7 @@
 Модуль для обновления данных
 """
 import json
-from typing import List
+from typing import List, Optional
 
 from ..database import sql_query, sql_query_record
 
@@ -27,7 +27,7 @@ def update_client_last_update(client_id: int, update_id: int) -> List[dict]:
     )
     return res
 
-def update_client_status(client_id: int, client_status: int|None) -> None:
+def update_client_status(client_id: int, client_status: Optional[int]) -> None:
     """
     Обновляем клиентский статус
     """
@@ -42,7 +42,7 @@ def update_client_status(client_id: int, client_status: int|None) -> None:
         """, (client_status, client_id)
     )
 
-def update_client_selected_entity(client_id: int, msg: str|None) -> None:
+def update_client_selected_entity(client_id: int, msg: Optional[str]) -> None:
     """
     Обновлем ид выбранной сущности
     """
