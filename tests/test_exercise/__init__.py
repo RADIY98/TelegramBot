@@ -17,4 +17,4 @@ mock_psycopg2.connect.return_value = mock_conn
 # Подменяем в sys.modules
 sys.modules['psycopg2'] = mock_psycopg2
 
-from bot_app.operation import exercise
+from bot_app import exercise

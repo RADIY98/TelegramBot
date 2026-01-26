@@ -48,26 +48,3 @@ def insert_train(client_id: int, train_name: str) -> None:
         )
         """, (train_name, client_id)
     )
-
-
-def insert_exercise(client_id: int, exercise_name: str) -> None:
-    """
-    Добавить упражнение
-    """
-    sql_query(
-    """
-        INSERT INTO
-            "Exercise"
-            (
-            "Name",
-            "TrainId"
-            )
-            SELECT
-                %s::text AS "ExerciseName",
-                "SelectedEntity"
-            FROM
-                "Client"
-            WHERE
-                "id"=%s::bigint
-        """, (exercise_name, client_id)
-    )

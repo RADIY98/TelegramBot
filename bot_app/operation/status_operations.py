@@ -3,14 +3,11 @@ import json
 from re import findall
 
 from .. import base_names
-from ..base_names import TrainStatus
+from ..base_names import TrainStatus, ExerciseStatus
 from ..client import Client
-from ..operation.exercise import ExerciseOperation, ExerciseStatus
 from ..operation.train import TrainOperation
-from ..database.update import update_client_status, set_exercise_settings, update_client_selected_entity
-from ..database import select
-from ..operation.exercise import Exercise
-
+from ..database.update import update_client_status, update_client_selected_entity
+from ..exercise import exercise_service, exercise_repository, Exercise
 
 class BaseOperation:
     """
@@ -23,6 +20,8 @@ class BaseOperation:
 
     def __init__(self, client_obj: Client):
         self.client_obj = client_obj
+        self.exercise_service = exercise_service.ExerciseOperationService(client_obj.client_id)
+        self.exercise_repository = exercise_repository.ExerciseRepository
 
     def call_method(self, msg) -> (str, List[str]):
         text_msg = ""
@@ -48,7 +47,9 @@ class BaseOperation:
                 msg.text == base_names.SetTrainSettingsButtons.change_exercise:
             update_client_status(self.client_obj.client_id, ExerciseStatus.CHANGE)
             text_msg = self.CHOOSE_EXERCISE_FROM_LIST
-            key_board = select.all_exercise_for_keyboard(self.client_obj.selected_entity)
+            key_board = self.exercise_service.get_exercises_name_by_train(
+                self.client_obj.selected_entity
+            )
 
         elif self.client_obj.status in base_names.TrainStatus.status_array:
             text_msg, key_board = TrainOperation(self.client_obj.client_id).handler(
@@ -56,32 +57,32 @@ class BaseOperation:
                 msg.text
             )
         elif self.client_obj.status in base_names.ExerciseStatus.status_array:
-            text_msg, key_board = ExerciseOperation(self.client_obj.client_id).handler(
+            text_msg, key_board = self.exercise_service.handler(
                 self.client_obj.status,
                 msg.text
             )
         elif self.client_obj.status == base_names.EXERCISE_READ_STATUS and msg.text == base_names.SetExerciseSettingsButtons.back:
-            exercise = select.read_exercise(self.client_obj.selected_entity)
+            exercise = self.exercise_repository.read(self.client_obj.selected_entity)
             train_id = exercise.get("TrainId")
-            key_board = select.all_exercise_for_keyboard(train_id)
+            key_board = self.exercise_service.get_exercises_name_by_train(train_id)
             text_msg = self.SELECTED_TRAIN.format(TrainOperation(self.client_obj.client_id).read(train_id))
 
         elif self.client_obj.status == base_names.EXERCISE_READ_STATUS:
             if findall(r"\d{,3}:", msg.text):
                 # значит апдейтим упражнение
-                set_exercise_settings(self.client_obj.selected_entity, json.dumps(msg.text))
+                self.exercise_repository.update(self.client_obj.selected_entity, json.dumps(msg.text))
 
-                exercise = select.read_exercise(self.client_obj.selected_entity)
+                exercise = self.exercise_repository.read(self.client_obj.selected_entity)
                 train_id = exercise.get("TrainId")
 
-                key_board = select.all_exercise_for_keyboard(train_id)
+                key_board = self.exercise_service.get_exercises_name_by_train(train_id)
                 text_msg = (
                     f"{base_names.UPDATED_EXERCISE}"
                     f"{base_names.SELECTED_TRAIN.format(TrainOperation(self.client_obj.client_id).read(train_id))}"
                 )
 
             else:
-                text_msg = Exercise(select.read_exercise(self.client_obj.selected_entity)).get_exercise_str()
+                text_msg = Exercise(self.exercise_repository.read(self.client_obj.selected_entity)).get_exercise_str()
                 key_board = [base_names.SetExerciseSettingsButtons.back]
 
 

@@ -1,21 +1,11 @@
+from typing import Tuple, List, Dict
 import json
-from typing import List, Tuple, Dict
 
-from . import Operation
-from .. import base_names
-from ..database.insert import insert_exercise
-from ..database.update import (
-    update_client_status,
-    update_client_selected_entity,
-    update_selected_entity_by_id,
-    rename_exercise,
-    set_exercise_settings
-)
-from ..database.delete import delete_exercise
-from ..database.select import get_client_selected_entity, is_exercise, all_exercise_for_keyboard, read_exercise
-from ..base_names import TrainStatus, SetTrainSettingsButtons, ExerciseStatus, SetExerciseSettingsButtons
+from . import exercise_repository
+from . import *
 
-class ExerciseOperation(Operation):
+
+class ExerciseOperationService:
     """
     Операции над упражнеениями
     """
@@ -31,7 +21,8 @@ class ExerciseOperation(Operation):
         """
         Инициализация класса
         """
-        self.client_id = client_id
+        self.exercise_repository = exercise_repository.ExerciseRepository
+        self.client_id: int = client_id
 
     def handler(self, status: int, msg: str) -> Tuple[str, list]:
         """
@@ -52,16 +43,16 @@ class ExerciseOperation(Operation):
         """
         Добавить упражнение
         """
-        insert_exercise(self.client_id, msg)
+        self.exercise_repository.add(msg, self.client_id)
         update_client_status(self.client_id, TrainStatus.CHANGE)
 
         return self.EXERCISE_CREATED.format(msg), SetTrainSettingsButtons.buttons_array
 
-    def delete(self, msg: str) -> str:
+    def delete(self) -> str:
         """
         Удаление упражнения
         """
-        exercise_name, train_id = delete_exercise(self.client_id)
+        exercise_name, train_id = self.exercise_repository.delete(self.client_id)
         update_selected_entity_by_id(self.client_id, train_id)
         update_client_status(self.client_id, ExerciseStatus.CHANGE)
 
@@ -74,7 +65,7 @@ class ExerciseOperation(Operation):
         update_client_status(self.client_id, ExerciseStatus.CHANGE)
         selected_entity = get_client_selected_entity(self.client_id)
 
-        rename_exercise(new_name, selected_entity)
+        self.exercise_repository.rename(new_name, selected_entity)
 
         return "Упражнение переименовано", SetExerciseSettingsButtons.buttons_array
 
@@ -85,37 +76,36 @@ class ExerciseOperation(Operation):
         text_msg = ""
         keyboard = []
         selected_entity = get_client_selected_entity(self.client_id)
-        if msg == base_names.MAIN_MENU:
+        if msg == MAIN_MENU:
             update_client_selected_entity(self.client_id, None)
             update_client_status(self.client_id, None)
-            return base_names.BACK_TO_MAIN_MENU, base_names.StartButtons.buttons_array
-
-        if is_exercise(msg):
+            return BACK_TO_MAIN_MENU, StartButtons.buttons_array
+        # TODO Это вообще пиздец. Нельзя ориентироваться на название упражнения. Переделать на статус клиента
+        # if is_exercise(msg):
+        if False:
             update_client_selected_entity(self.client_id, msg)
             text_msg = self.SELECTED_EXERCISE.format(msg)
             keyboard = SetExerciseSettingsButtons.buttons_array
-        elif msg == base_names.NO_EXERCISE:
+        elif msg == NO_EXERCISE:
             update_client_status(self.client_id, ExerciseStatus.CREATE)
             text_msg = self.WRITE_NEW_EXERCISE_NAME
-            keyboard = base_names.SetTrainSettingsButtons.buttons_array
+            keyboard = SetTrainSettingsButtons.buttons_array
 
         elif msg == SetExerciseSettingsButtons.delete:
-            text_msg, keyboard = ExerciseOperation(self.client_id).delete(msg)
+            text_msg, keyboard = self.exercise_repository.delete(self.client_id)
         elif msg == SetExerciseSettingsButtons.rename:
             update_client_status(self.client_id, ExerciseStatus.RENAME)
             text_msg = self.WRITE_NEW_EXERCISE_NAME
             keyboard = SetExerciseSettingsButtons.buttons_array
         elif msg == SetExerciseSettingsButtons.back:
-            exercise: dict = read_exercise(selected_entity)
+            exercise: dict = self.exercise_repository.read(selected_entity)
             train_id: int = exercise.get("TrainId")
             update_selected_entity_by_id(self.client_id, train_id)
-            text_msg, keyboard = self.BACK_TO_EXERCISE, all_exercise_for_keyboard(train_id)
+            text_msg, keyboard = self.BACK_TO_EXERCISE, self.get_exercises_name_by_train(train_id)
         elif msg == SetExerciseSettingsButtons.change:
             update_client_status(self.client_id, ExerciseStatus.UPDATE)
             text_msg = self.WRITE_EXERCISE_SETTINGS
             keyboard = SetExerciseSettingsButtons.buttons_array
-
-
 
         return text_msg, keyboard
 
@@ -125,44 +115,15 @@ class ExerciseOperation(Operation):
         """
         selected_entity = get_client_selected_entity(self.client_id)
 
-        set_exercise_settings(selected_entity, json.dumps(msg))
+        self.exercise_repository.update(selected_entity, json.dumps(msg))
         update_client_status(self.client_id, ExerciseStatus.CHANGE)
-        return base_names.UPDATED_EXERCISE, SetExerciseSettingsButtons.buttons_array
+        return UPDATED_EXERCISE, SetExerciseSettingsButtons.buttons_array
 
-class Exercise:
-    """
-    Класс с форматом упражнения
-    """
-    def __init__(self, exercise: dict):
-        self._id: int = exercise.get("Id")
-        self.name: str = exercise.get("Name")
-        self.split_settings: Dict[str, str] = self.split_settings(exercise.get("Settings"))
-        self.train: str = exercise.get("TrainId")
+    def get_exercises_name_by_train(self, train_id: int):
+        exercises: List[Dict]  = self.exercise_repository.get_by_train([train_id])
+        exercises_names: List[str] = [exe.get("Name") for exe in exercises]
+        if not exercises_names:
+            exercises_names = ["Давайте добавим упражнения"]
+        exercises_names.append(MAIN_MENU)
 
-    @staticmethod
-    def split_settings(settings: str) -> Dict[str, str]:
-        """
-        Внутренний метод для парсинга настроек упражнения
-        """
-        split_result = {}
-        if not settings:
-            raise Exception("Not transmitted parameter - Settings")
-
-        split_settings: List[str] = settings.split("/n")
-        for row in split_settings:
-            split_row: List[str] = row.split(":")
-            split_row = list(map(str.strip, split_row))
-            split_result[split_row[0]] = split_row[1]
-
-        return split_result
-
-    def get_exercise_str(self) -> str:
-        """
-        Получить настройки упражнения в виде отформатированной строки
-        """
-        result = f'Упражнение - {self.name}\n' + \
-                  "\n\n".join(
-                      f"Вес - {count} \nКоличество подходов - {value}" for count, value in self.split_settings.items()
-                  )
-
-        return result
+        return exercises_names

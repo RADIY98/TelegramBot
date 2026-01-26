@@ -1,10 +1,9 @@
 """
 Модуль для обновления данных
 """
-import json
 from typing import List, Optional
 
-from ..database import sql_query, sql_query_record
+from ..database import sql_query
 
 
 def update_client_last_update(client_id: int, update_id: int) -> List[dict]:
@@ -86,6 +85,7 @@ def update_selected_entity_by_id(client_id: int, concrete_id: int):
             "id"=%s::bigint
             """, [concrete_id, client_id]
     )
+
 def drop_selected_entity(client_id: int) -> None:
     """
     Сбросим ид выбранной сущности, так как мы вышли в главное меню
@@ -113,34 +113,4 @@ def update_train(client_id: int, train_name: str) -> None:
         WHERE
             "id" = (SELECT "SelectedEntity" FROM "Client" WHERE "id"=%s::int)
     """, (train_name, client_id)
-    )
-
-def rename_exercise(exercise_name: str, selected_entity: int) -> None:
-    """
-    Переименовываем упражнения
-    """
-    sql_query(
-        """
-        UPDATE
-            "Exercise"
-        SET
-            "Name"=%s::text
-        WHERE
-            "id"=%s::int
-        """, [exercise_name, selected_entity]
-    )
-
-def set_exercise_settings(exercise_id: int, settings: json) -> None:
-    """
-    Задать настройки упражнения
-    """
-    sql_query_record(
-        """
-        UPDATE 
-            "Exercise"
-        SET
-            "Settings"=%s::jsonb
-        WHERE
-            "id"=%s::int
-        """, [settings, exercise_id]
     )

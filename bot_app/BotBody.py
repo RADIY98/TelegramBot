@@ -13,6 +13,7 @@ from .database import insert, select, update
 from .operation.train import TrainOperation
 from .schemas.Response import Msg
 from .operation.status_operations import BaseOperation
+from .exercise import exercise_service
 from . import base_names
 
 
@@ -86,7 +87,9 @@ async def get_updates(request: Request):
                     update.update_client_selected_entity(client_id, msg.text)
                     update.update_client_status(client_id, base_names.EXERCISE_READ_STATUS)
                     train_id = select.get_client_selected_entity(client_id)
-                    key_board = select.all_exercise_for_keyboard(train_id)
+                    key_board = exercise_service.ExerciseOperationService(client_id).get_exercises_name_by_train(
+                        train_id
+                    )
                     text_msg = base_names.SELECTED_TRAIN.format(TrainOperation(client_id).read(train_id))
                 elif msg.text == base_names.StartButtons.statistic:
                     pass

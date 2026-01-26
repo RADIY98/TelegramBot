@@ -1,3 +1,5 @@
+from typing import Any, Dict, List
+
 from psycopg2 import connect
 from ..base_names import DbUser, DB_PASSWORD
 
@@ -94,7 +96,7 @@ def __create_exercise_table() -> None:
     )
 
 
-def sql_query(sql_request: str, *args):
+def sql_query(sql_request: str, *args) -> List[Dict[str, Any]]:
     """
     Выполняем запрос к бд
     """
@@ -123,7 +125,7 @@ def sql_query(sql_request: str, *args):
     return result_list
 
 
-def sql_query_record(sql_tmpl: str, params = None) -> dict:
+def sql_query_record(sql_tmpl: str, params = None) -> Dict[str, Any]:
     """
     SQL request to DB
     """
@@ -151,7 +153,7 @@ def sql_query_record(sql_tmpl: str, params = None) -> dict:
     return result
 
 
-def sql_query_scalar(sql_tmpl: str, args):
+def sql_query_scalar(sql_tmpl: str, args) -> Dict:
     """
     SQL request to DB
 
