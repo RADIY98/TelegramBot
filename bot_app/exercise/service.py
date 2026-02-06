@@ -1,7 +1,6 @@
-from typing import Tuple, List, Dict
+from typing import Tuple
 import json
 
-from . import exercise_repository
 from . import *
 
 

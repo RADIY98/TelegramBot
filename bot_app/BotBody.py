@@ -10,10 +10,9 @@ from fastapi import APIRouter, Request
 from .KeyBoard import KeyBoard
 from .client import Client
 from .database import insert, select, update
-from .operation.train import TrainOperation
+from bot_app.train.service import TrainService, TrainStatus
 from .schemas.Response import Msg
 from .operation.status_operations import BaseOperation
-from .exercise import exercise_service
 from . import base_names
 
 
@@ -63,17 +62,17 @@ async def get_updates(request: Request):
                 elif msg.text == base_names.TrainSettingsButton.delete:
                     text_msg = base_names.GOING_TO_DELETE
                     key_board = client_obj.trains
-                    update.update_client_status(client_id, base_names.TrainStatus.DELETE)
+                    update.update_client_status(client_id, TrainStatus.DELETE)
 
                 elif msg.text == base_names.TrainSettingsButton.change:
                     text_msg = base_names.GOING_TO_CHANGE
                     key_board = client_obj.trains
-                    update.update_client_status(client_id, base_names.TrainStatus.CHANGE)
+                    update.update_client_status(client_id, TrainStatus.CHANGE)
 
                 elif msg.text == base_names.TrainSettingsButton.create:
                     text_msg = base_names.ENTER_TRAIN_NAME
                     key_board = base_names.StartButtons.buttons_array
-                    update.update_client_status(client_id, base_names.TrainStatus.CREATE)
+                    update.update_client_status(client_id, TrainStatus.CREATE)
 
                 elif msg.text == base_names.StartButtons.trains:
                     if client_obj.trains:
@@ -90,7 +89,7 @@ async def get_updates(request: Request):
                     key_board = exercise_service.ExerciseOperationService(client_id).get_exercises_name_by_train(
                         train_id
                     )
-                    text_msg = base_names.SELECTED_TRAIN.format(TrainOperation(client_id).read(train_id))
+                    text_msg = base_names.SELECTED_TRAIN.format(TrainService(client_id).read(train_id))
                 elif msg.text == base_names.StartButtons.statistic:
                     pass
 

@@ -78,30 +78,4 @@ class SetExerciseSettingsButtons:
     back = "К упражнениям"
     buttons_array = [delete, change, rename, back]
 
-
-@dataclass
-class TrainStatus:
-    """
-    Статусы тренировок
-    """
-    CHANGE = 1
-    DELETE = 2
-    CREATE = 3
-    RENAME = 4
-    status_array = [CREATE, DELETE, CHANGE, RENAME]
-
-
-@dataclass
-class ExerciseStatus:
-    """
-    Статусы упражнений
-    """
-    CREATE = 5
-    DELETE = 6
-    CHANGE = 7
-    RENAME = 8
-    UPDATE = 9
-    status_array = [CREATE, RENAME, CHANGE, DELETE, UPDATE]
-
-
 EXERCISE_READ_STATUS = 10

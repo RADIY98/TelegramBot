@@ -100,17 +100,3 @@ def drop_selected_entity(client_id: int) -> None:
             "id"={client_id}::bigint
         """
     )
-
-def update_train(client_id: int, train_name: str) -> None:
-    """
-    Обновим название тренировки
-    """
-    sql_query("""
-        UPDATE
-            "Train"
-        SET
-            "Name"=%s::text
-        WHERE
-            "id" = (SELECT "SelectedEntity" FROM "Client" WHERE "id"=%s::int)
-    """, (train_name, client_id)
-    )

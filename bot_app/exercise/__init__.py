@@ -10,6 +10,18 @@ from ..database.update import (
 from ..database.select import get_client_selected_entity
 
 
+class ExerciseStatus:
+    """
+    Статусы упражнений
+    """
+    CREATE = 5
+    DELETE = 6
+    CHANGE = 7
+    RENAME = 8
+    UPDATE = 9
+    status_array = [CREATE, RENAME, CHANGE, DELETE, UPDATE]
+
+
 class Exercise:
     """
     Класс с форматом упражнения
