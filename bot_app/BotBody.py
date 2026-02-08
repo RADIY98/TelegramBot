@@ -12,6 +12,8 @@ from .client import Client
 from .database import insert, select, update
 from bot_app.services.train_service import TrainService, TrainStatus
 from .domain.entities.client_status import ClientStatus
+from .domain.events import client_events
+from .handlers import client_handlers
 from .event_bus import EventBus
 from .schemas.Response import Msg
 from .operation.status_operations import BaseOperation
@@ -32,6 +34,9 @@ async def get_updates(request: Request):
     key_board = None
     record = await request.json()
     client_status = ClientStatus()
+    event_bus = EventBus()
+    event_bus.subscribe(client_events.ClientEventStatusChange, client_handlers.UpdateClientStatus)
+    event_bus.subscribe(client_events.ClientEventSelectedEntityChange, client_handlers.UpdateClientSelectedEntity)
 
     print(record)
     if record:
@@ -67,19 +72,34 @@ async def get_updates(request: Request):
                     text_msg = base_names.GOING_TO_DELETE
                     key_board = client_obj.trains
 
-                    client_status.set_status(TrainStatus.DELETE)
+                    event_bus.publish(
+                        client_events.ClientEventStatusChange(
+                        client_id=client_id,
+                        client_status=TrainStatus.DELETE
+                        )
+                    )
 
                 elif msg.text == base_names.TrainSettingsButton.change:
                     text_msg = base_names.GOING_TO_CHANGE
                     key_board = client_obj.trains
 
-                    client_status.set_status(TrainStatus.CHANGE)
+                    event_bus.publish(
+                        client_events.ClientEventStatusChange(
+                            client_id=client_id,
+                            client_status=TrainStatus.CHANGE
+                        )
+                    )
 
                 elif msg.text == base_names.TrainSettingsButton.create:
                     text_msg = base_names.ENTER_TRAIN_NAME
                     key_board = base_names.StartButtons.buttons_array
 
-                    client_status.set_status(TrainStatus.CREATE)
+                    event_bus.publish(
+                        client_events.ClientEventStatusChange(
+                            client_id=client_id,
+                            client_status=TrainStatus.CREATE
+                        )
+                    )
 
                 elif msg.text == base_names.StartButtons.trains:
                     if client_obj.trains:
@@ -90,9 +110,17 @@ async def get_updates(request: Request):
                         key_board = []
 
                 elif msg.text in client_obj.trains:
-                    update.update_client_selected_entity(client_id, msg.text)
+                    event_entity = client_events.ClientEventSelectedEntityChange(
+                        client_id=client_id,
+                        selected_id=int(msg.text)
+                    )
 
-                    client_status.set_status(base_names.EXERCISE_READ_STATUS)
+                    event_status = client_events.ClientEventStatusChange(
+                        client_id=client_id,
+                        client_status=base_names.EXERCISE_READ_STATUS
+                    )
+
+                    event_bus.publish_many(event_status, event_entity)
 
                     train_id = select.get_client_selected_entity(client_id)
                     key_board = exercise_service.ExerciseService(client_id).get_exercises_name_by_train(
@@ -130,7 +158,6 @@ async def get_updates(request: Request):
                     "text": f"{e}"
                 }
             )
-    update_client_status(client_id, client_status.get_status())
 
     return JSONResponse(
         content={

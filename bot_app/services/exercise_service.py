@@ -2,12 +2,13 @@ from typing import Tuple, List, Dict
 import json
 
 from bot_app.domain.entities import train_entity, exercise_entity
+from bot_app.domain.events import client_events
 from bot_app.repositories import exercie_repository
 
 
 class ExerciseService:
     """
-    Операции над упражнеениями
+    Операции над упражнениями
     """
     EXERCISE_CREATED =  'Упражнение - "{}" успешно добавлено'
     EXERCISE_DELETED = "Упражнение {} успешно удалено"
@@ -17,12 +18,12 @@ class ExerciseService:
     SELECTED_EXERCISE = 'Выбрано упражнение - "{}"'
 
 
-    def __init__(self, exercise_rep: exercie_repository.ExerciseRepository, client_status):
+    def __init__(self, exercise_rep: exercie_repository.ExerciseRepository, event_bus):
         """
         Инициализация класса
         """
         self.exercise_rep = exercise_rep
-        self.client_status = client_status
+        self.event_bus = event_bus
         self._handlers = {
             exercise_entity.ExerciseStatus.CHANGE: self.change,
             exercise_entity.ExerciseStatus.DELETE: self.delete,
@@ -37,33 +38,52 @@ class ExerciseService:
         """
         return self._handlers.get(status)(msg)
 
-    def create(self, msg: str) -> Tuple[str, list]:
+    def create(self, client_id, msg: str) -> Tuple[str, list]:
         """
         Добавить упражнение
         """
-        self.exercise_repository.add(msg, self.client_service.client_id)
+        self.exercise_repository.add(msg, client_id)
 
-        self.client_status.set_status(train_entity.TrainStatus.CHANGE)
+        event = client_events.ClientEventStatusChange(
+            client_id=client_id,
+            client_status=train_entity.TrainStatus.CHANGE
+        )
+        self.event_bus.publish(event)
 
         return self.EXERCISE_CREATED.format(msg), SetTrainSettingsButtons.buttons_array
 
-    def delete(self) -> str:
+    def delete(self, client_id: int) -> str:
         """
         Удаление упражнения
         """
-        exercise_name, train_id = self.exercise_repository.delete(self.client_service.client_id)
+        exercise_name, train_id = self.exercise_repository.delete(client_id)
 
-        update_selected_entity_by_id(self.client_service.client_id, train_id)
+        event_status = client_events.ClientEventStatusChange(
+            client_id=client_id,
+            client_status=exercise_entity.ExerciseStatus.CHANGE
+        )
+        event_entity = client_events.ClientEventSelectedEntityChange(
+            client_id=client_id,
+            selected_id=train_id
+        )
 
-        self.client_status.set_status(exercise_entity.ExerciseStatus.CHANGE)
+        self.event_bus.publish_many(
+            event_entity,
+            event_status
+        )
 
         return self.EXERCISE_DELETED.format(exercise_name)
 
-    def rename(self, new_name: str) -> Tuple[str, list]:
+    def rename(self, client_id: int, new_name: str) -> Tuple[str, list]:
         """
         Переименовать упражнение
         """
-        self.client_status.set_status(exercise_entity.ExerciseStatus.CHANGE)
+
+        event_status = client_events.ClientEventStatusChange(
+            client_id=client_id,
+            client_status=exercise_entity.ExerciseStatus.CHANGE
+        )
+        self.event_bus.publish(event_status)
 
         selected_entity = get_client_selected_entity(self.client_service.client_id)
 
@@ -71,7 +91,7 @@ class ExerciseService:
 
         return "Упражнение переименовано", SetExerciseSettingsButtons.buttons_array
 
-    def change(self, msg: str) -> Tuple[str, list]:
+    def change(self, client_id: int, msg: str) -> Tuple[str, list]:
         """
         Изменить упражнение
         """
@@ -79,8 +99,18 @@ class ExerciseService:
         keyboard = []
         selected_entity = get_client_selected_entity(self.client_id)
         if msg == MAIN_MENU:
-            update_client_selected_entity(self.client_id, None)
-            self.client_status.set_status(None)
+            event_entity = client_events.ClientEventSelectedEntityChange(
+                client_id=client_id,
+                selected_id=None
+            )
+
+            event_status = client_events.ClientEventStatusChange(
+                client_id=client_id,
+                client_status=None
+            )
+
+            self.event_bus.publish_many(event_status, event_entity)
+
             return BACK_TO_MAIN_MENU, StartButtons.buttons_array
         # TODO Это вообще пиздец. Нельзя ориентироваться на название упражнения. Переделать на статус клиента
         # if is_exercise(msg):
@@ -89,23 +119,41 @@ class ExerciseService:
             text_msg = self.SELECTED_EXERCISE.format(msg)
             keyboard = SetExerciseSettingsButtons.buttons_array
         elif msg == NO_EXERCISE:
-            self.client_status.set_status(exercise_entity.ExerciseStatus.CREATE)
+            event_status = client_events.ClientEventStatusChange(
+                client_id=client_id,
+                client_status=exercise_entity.ExerciseStatus.CREATE
+            )
+            self.event_bus.publish(event_status)
             text_msg = self.WRITE_NEW_EXERCISE_NAME
             keyboard = SetTrainSettingsButtons.buttons_array
 
         elif msg == SetExerciseSettingsButtons.delete:
             text_msg, keyboard = self.exercise_repository.delete(self.client_id)
         elif msg == SetExerciseSettingsButtons.rename:
-            self.client_status.set_status(exercise_entity.ExerciseStatus.RENAME)
+            event_status = client_events.ClientEventStatusChange(
+                client_id=client_id,
+                client_status=exercise_entity.ExerciseStatus.RENAME
+            )
+            self.event_bus.publish(event_status)
             text_msg = self.WRITE_NEW_EXERCISE_NAME
             keyboard = SetExerciseSettingsButtons.buttons_array
         elif msg == SetExerciseSettingsButtons.back:
             exercise: dict = self.exercise_repository.read(selected_entity)
             train_id: int = exercise.get("TrainId")
-            update_selected_entity_by_id(self.client_id, train_id)
+            event_status = client_events.ClientEventSelectedEntityChange(
+                client_id=client_id,
+                selected_id=train_id
+            )
+            self.event_bus.publish(event_status)
+
             text_msg, keyboard = self.BACK_TO_EXERCISE, self.get_exercises_name_by_train(train_id)
         elif msg == SetExerciseSettingsButtons.change:
-            self.client_status.set_status(exercise_entity.ExerciseStatus.UPDATE)
+            event_status = client_events.ClientEventStatusChange(
+                client_id=client_id,
+                client_status=exercise_entity.ExerciseStatus.UPDATE
+            )
+            self.event_bus.publish(event_status)
+
             text_msg = self.WRITE_EXERCISE_SETTINGS
             keyboard = SetExerciseSettingsButtons.buttons_array
 
@@ -118,8 +166,11 @@ class ExerciseService:
         selected_entity = get_client_selected_entity(self.client_id)
 
         self.exercise_repository.update(selected_entity, json.dumps(msg))
-
-        self.client_status.set_status(exercise_entity.ExerciseStatus.CHANGE)
+        event_status = client_events.ClientEventStatusChange(
+            client_id=client_id,
+            client_status=exercise_entity.ExerciseStatus.CHANGE
+        )
+        self.event_bus.publish(event_status)
 
         return UPDATED_EXERCISE, SetExerciseSettingsButtons.buttons_array
 

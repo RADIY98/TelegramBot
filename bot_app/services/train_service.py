@@ -5,6 +5,7 @@ from typing import Tuple
 
 from bot_app import base_names
 from bot_app.domain.entities.client_status import ClientStatus
+from bot_app.domain.events import client_events
 from bot_app.operation import Operation
 from bot_app.database.select import get_client_selected_entity
 from bot_app.database.update import drop_selected_entity, update_client_selected_entity
@@ -20,7 +21,7 @@ class TrainService(Operation):
     WRITE_NEW_TRAIN_NAME = "Напишите новое название тренировки"
     BACK_TO_TRAIN = "Возвращаемся к тренировкам"
 
-    def __init__(self, client_id: int, train_crud: TrainRepository, client_status: ClientStatus):
+    def __init__(self, client_id: int, train_crud: TrainRepository, event_bus):
         self.client_id = client_id
         self._handlers = {
             TrainStatus.CHANGE: self.change,
@@ -29,7 +30,7 @@ class TrainService(Operation):
             TrainStatus.RENAME: self.rename,
         }
         self.train_crud = train_crud
-        self.client_status = client_status
+        self.event_bus = event_bus
 
 
     def process(self, status: int, msg: str) -> Tuple[str, list]:
@@ -38,37 +39,47 @@ class TrainService(Operation):
         """
         return self._handlers.get(status)(msg)
 
-    def create(self, msg: str) -> Tuple[str, list]:
+    def create(self, client_id: int, msg: str) -> Tuple[str, list]:
         """
         Создание тренировки
         """
         self.train_crud.add(self.client_id, msg)
-
-        self.client_status.set_status(None)
+        event = client_events.ClientEventStatusChange(
+            client_id=client_id,
+            client_status=None
+        )
+        self.event_bus.publish(event)
 
         return self.TRAIN_CREATED.format(msg), TrainSettingsButton.buttons_array
 
-    def delete(self, msg: str) -> Tuple[str, list]:
+    def delete(self, client_id: int, msg: str) -> Tuple[str, list]:
         """
         Метод удаления тренировки
         """
         self.train_crud.delete(msg)
-
-        self.client_status.set_status(None)
+        event = client_events.ClientEventStatusChange(
+            client_id=client_id,
+            client_status=None
+        )
+        self.event_bus.publish(event)
 
         return self.TRAIN_DELETED.format(msg), TrainSettingsButton.buttons_array
 
-    def rename(self, msg: str) -> Tuple[str, list]:
+    def rename(self, client_id: int, msg: str) -> Tuple[str, list]:
         """
         Создание тренировки
         """
         self.train_crud.rename(self.client_id, msg)
 
-        self.client_status.set_status(TrainStatus.CHANGE)
+        event = client_events.ClientEventStatusChange(
+            client_id=client_id,
+            client_status=TrainStatus.CHANGE
+        )
+        self.event_bus.publish(event)
 
         return self.TRAIN_RENAMED.format(msg), SetTrainSettingsButtons.buttons_array
 
-    def change(self, msg: str) -> Tuple[str, list]:
+    def change(self, client_id: int, msg: str) -> Tuple[str, list]:
         """
         Изменение настроек тренировки
         """
@@ -82,7 +93,11 @@ class TrainService(Operation):
                 if msg == SetTrainSettingsButtons.rename_train:
                     text_msg = self.WRITE_NEW_TRAIN_NAME
 
-                    self.client_status.set_status(TrainStatus.RENAME)
+                    event = client_events.ClientEventStatusChange(
+                        client_id=client_id,
+                        client_status=TrainStatus.RENAME
+                    )
+                    self.event_bus.publish(event)
 
                     keyboard = SetTrainSettingsButtons.buttons_array
                 elif msg ==SetTrainSettingsButtons.back_to_trains:
@@ -92,7 +107,12 @@ class TrainService(Operation):
                     keyboard.append(MAIN_MENU)
 
             else:
-                update_client_selected_entity(self.client_id, msg)
+                event = client_events.ClientEventSelectedEntityChange(
+                    client_id=client_id,
+                    selected_id=msg
+                )
+                self.event_bus.publish(event)
+
                 text_msg = base_names.SELECTED_TRAIN.format(msg)
                 keyboard = SetTrainSettingsButtons.buttons_array
 

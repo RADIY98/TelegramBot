@@ -7,6 +7,7 @@ from ..exercise import ExerciseStatus
 from ..train import TrainStatus
 from ..client import Client
 from bot_app.services.train_service import TrainService
+from ..domain.events import client_events
 from ..database.update import update_client_selected_entity
 from ..exercise import Exercise
 
@@ -20,34 +21,53 @@ class BaseOperation:
     CHOOSE_EXERCISE_FROM_LIST = "Выберите упражнение из списка"
     SELECTED_TRAIN = 'Вы выбрали тренировку - "{}"'
 
-    def __init__(self, client_obj: Client, client_status):
+    def __init__(self, client_obj: Client, event_bus):
         self.client_obj = client_obj
         self.exercise_service = service.ExerciseService(client_obj.client_id)
         self.exercise_repository = repository.ExerciseRepository
-        self.client_status = client_status
+        self.event_bus = event_bus
 
-    def call_method(self, msg) -> (str, List[str]):
+    def call_method(self, client_id: int, msg) -> (str, List[str]):
         text_msg = ""
         print(f"ВОТ так вот {self.client_obj.status}  {msg.text}")
         key_board = []
         if msg.text == base_names.MAIN_MENU:
             update_client_selected_entity(self.client_obj.client_id, None)
 
-            self.client_status.set_status(None)
+            event_entity = client_events.ClientEventSelectedEntityChange(
+                client_id=client_id,
+                selected_id=None
+            )
+
+            event_status = client_events.ClientEventStatusChange(
+                client_id=client_id,
+                client_status=None
+            )
+
+            self.event_bus.publish_many(event_entity, event_status)
 
             return base_names.BACK_TO_MAIN_MENU, base_names.StartButtons.buttons_array
         if self.client_obj.status == TrainStatus.CHANGE and \
                 msg.text == base_names.SetTrainSettingsButtons.add_exercise:
 
-            self.client_status.set_status(ExerciseStatus.CREATE)
-
+            self.event_bus.publish(
+                client_events.ClientEventStatusChange(
+                    client_id=client_id,
+                    client_status=ExerciseStatus.CREATE
+                )
+            )
             text_msg = self.WRITE_EXERCISE_NAME
             key_board = base_names.SetTrainSettingsButtons.buttons_array
 
         elif self.client_obj.status == TrainStatus.CHANGE and \
                 msg.text == base_names.SetTrainSettingsButtons.rename_train:
 
-            self.client_status.set_status(TrainStatus.RENAME)
+            self.event_bus.publish(
+                client_events.ClientEventStatusChange(
+                    client_id=client_id,
+                    client_status=TrainStatus.RENAME
+                )
+            )
 
             text_msg = self.WRITE_NEW_TRAIN_NAME
             key_board = base_names.SetTrainSettingsButtons.buttons_array
@@ -55,7 +75,12 @@ class BaseOperation:
         elif self.client_obj.status == TrainStatus.CHANGE and \
                 msg.text == base_names.SetTrainSettingsButtons.change_exercise:
 
-            self.client_status.set_status(ExerciseStatus.CHANGE)
+            self.event_bus.publish(
+                client_events.ClientEventStatusChange(
+                    client_id=client_id,
+                    client_status=ExerciseStatus.CHANGE
+                )
+            )
 
             text_msg = self.CHOOSE_EXERCISE_FROM_LIST
             key_board = self.exercise_service.get_exercises_name_by_train(
@@ -72,7 +97,10 @@ class BaseOperation:
                 self.client_obj.status,
                 msg.text
             )
-        elif self.client_obj.status == base_names.EXERCISE_READ_STATUS and msg.text == base_names.SetExerciseSettingsButtons.back:
+        elif (
+                self.client_obj.status == base_names.EXERCISE_READ_STATUS and
+              msg.text == base_names.SetExerciseSettingsButtons.back
+        ):
             exercise = self.exercise_repository.read(self.client_obj.selected_entity)
             train_id = exercise.get("TrainId")
             key_board = self.exercise_service.get_exercises_name_by_train(train_id)
