@@ -1,15 +1,9 @@
-from typing import Tuple
+from typing import Tuple, List, Dict
 import json
 
 from . import *
 
-class ExerciseCRUDRepository:
-
-    def __init__(self):
-        #TODO Добавить через композицию класс содержащий информацию о клиенте.
-        # Пока передаем ручками
-        # self.client_obj =
-        pass
+class ExerciseRepository:
 
     @staticmethod
     def add(exercise_name: str, client_id: int):
@@ -81,9 +75,6 @@ class ExerciseCRUDRepository:
         )
         return result
 
-
-class ExerciseQueryRepository:
-
     @staticmethod
     def get_by_train(train_id: int) -> List[Dict]:
         result = sql_query(
@@ -97,9 +88,3 @@ class ExerciseQueryRepository:
             """, [train_id]
         )
         return result
-
-
-class ExerciseRepository(ExerciseCRUDRepository, ExerciseQueryRepository):
-    def __init__(self):
-        ExerciseCRUDRepository.__init__(self)
-        ExerciseQueryRepository.__init__(self)

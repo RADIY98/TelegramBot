@@ -1,13 +1,12 @@
 from typing import Dict, List
 
-from ..database import sql_query, sql_query_record
-from ..base_names import *
-from ..database.update import (
-    update_client_status,
+from ...database import sql_query, sql_query_record
+from ...base_names import *
+from ...database.update import (
     update_client_selected_entity,
     update_selected_entity_by_id,
 )
-from ..database.select import get_client_selected_entity
+from ...database.select import get_client_selected_entity
 
 
 class ExerciseStatus:

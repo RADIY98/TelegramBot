@@ -10,7 +10,9 @@ from fastapi import APIRouter, Request
 from .KeyBoard import KeyBoard
 from .client import Client
 from .database import insert, select, update
-from bot_app.train.service import TrainService, TrainStatus
+from bot_app.services.train_service import TrainService, TrainStatus
+from .domain.entities.client_status import ClientStatus
+from .event_bus import EventBus
 from .schemas.Response import Msg
 from .operation.status_operations import BaseOperation
 from . import base_names
@@ -29,6 +31,8 @@ async def get_updates(request: Request):
     text_msg = None
     key_board = None
     record = await request.json()
+    client_status = ClientStatus()
+
     print(record)
     if record:
         try:
@@ -62,17 +66,20 @@ async def get_updates(request: Request):
                 elif msg.text == base_names.TrainSettingsButton.delete:
                     text_msg = base_names.GOING_TO_DELETE
                     key_board = client_obj.trains
-                    update.update_client_status(client_id, TrainStatus.DELETE)
+
+                    client_status.set_status(TrainStatus.DELETE)
 
                 elif msg.text == base_names.TrainSettingsButton.change:
                     text_msg = base_names.GOING_TO_CHANGE
                     key_board = client_obj.trains
-                    update.update_client_status(client_id, TrainStatus.CHANGE)
+
+                    client_status.set_status(TrainStatus.CHANGE)
 
                 elif msg.text == base_names.TrainSettingsButton.create:
                     text_msg = base_names.ENTER_TRAIN_NAME
                     key_board = base_names.StartButtons.buttons_array
-                    update.update_client_status(client_id, TrainStatus.CREATE)
+
+                    client_status.set_status(TrainStatus.CREATE)
 
                 elif msg.text == base_names.StartButtons.trains:
                     if client_obj.trains:
@@ -84,12 +91,14 @@ async def get_updates(request: Request):
 
                 elif msg.text in client_obj.trains:
                     update.update_client_selected_entity(client_id, msg.text)
-                    update.update_client_status(client_id, base_names.EXERCISE_READ_STATUS)
+
+                    client_status.set_status(base_names.EXERCISE_READ_STATUS)
+
                     train_id = select.get_client_selected_entity(client_id)
-                    key_board = exercise_service.ExerciseOperationService(client_id).get_exercises_name_by_train(
+                    key_board = exercise_service.ExerciseService(client_id).get_exercises_name_by_train(
                         train_id
                     )
-                    text_msg = base_names.SELECTED_TRAIN.format(TrainService(client_id).read(train_id))
+                    text_msg = base_names.SELECTED_TRAIN.format(TrainService(client_id, client_status).read(train_id))
                 elif msg.text == base_names.StartButtons.statistic:
                     pass
 
@@ -121,6 +130,8 @@ async def get_updates(request: Request):
                     "text": f"{e}"
                 }
             )
+    update_client_status(client_id, client_status.get_status())
+
     return JSONResponse(
         content={
             "ok": True

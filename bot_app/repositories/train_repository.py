@@ -1,7 +1,7 @@
 from . import *
 
 
-class TrainCRUDRepository:
+class TrainRepository:
 
     @staticmethod
     def add(client_id: int, train_name: str) -> None:
@@ -71,8 +71,6 @@ class TrainCRUDRepository:
             """, (train_name, client_id)
         )
 
-
-class TrainQueryRepository:
     @staticmethod
     def get_all_trains_name(client_id) -> list:
         """
@@ -92,8 +90,3 @@ class TrainQueryRepository:
         )
 
         return result if result else []
-
-class TrainRepository(TrainCRUDRepository, TrainQueryRepository):
-    def __init__(self):
-        TrainCRUDRepository.__init__(self)
-        TrainQueryRepository.__init__(self)
