@@ -3,6 +3,8 @@ import json
 
 from . import *
 
+import repository
+from ..train import TrainStatus
 
 class ExerciseOperationService:
     """
@@ -20,7 +22,7 @@ class ExerciseOperationService:
         """
         Инициализация класса
         """
-        self.exercise_repository = exercise_repository.ExerciseRepository
+        self.exercise_repository = repository.ExerciseRepository
         self.client_id: int = client_id
 
     def handler(self, status: int, msg: str) -> Tuple[str, list]:
