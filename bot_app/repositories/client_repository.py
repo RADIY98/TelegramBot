@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict
 
 from . import sql_query
 
@@ -6,11 +6,11 @@ from . import sql_query
 class ClientRepository:
 
     @staticmethod
-    def update_status(client_id: int, client_status: Optional[int]) -> None:
+    def update_status(client_id: int, client_status: Optional[int]) -> List[Dict]:
         """
         Обновляем клиентский статус
         """
-        sql_query(
+        return sql_query(
             """
             UPDATE
                 "Client"
@@ -18,6 +18,9 @@ class ClientRepository:
                 "Status"=%s::bigint
             WHERE
                 "id"=%s::bigint
+            RETURNING
+                "id",
+                "UpdateId"
             """, (client_status, client_id)
         )
 

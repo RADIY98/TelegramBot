@@ -22,19 +22,3 @@ class KeyBoard:
         """
 
         return [[KeyboardButton(text=key).text] for key in self.buttons]
-
-
-class InlineKeyboardButton:
-    def __init__(self, text):
-        self.text = text
-
-
-class InlineKeyBoard:
-    """
-    Класс, отвечающий за inline-клавиатуру
-    """
-    def __init__(self, buttons):
-        self.buttons = buttons
-
-    def get_keyboard(self):
-        return [[InlineKeyboardButton(text=key).text] for key in self.buttons]
