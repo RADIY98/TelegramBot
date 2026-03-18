@@ -17,6 +17,9 @@ class ButtonsGraph:
     def add_node(self, node: GraphNode) -> None:
         self.nodes[node.id] = node
 
+    def add_nodes(self, nodes: List[GraphNode]) -> None:
+        self.nodes.update({node.id: node for node in nodes})
+
     def delete_node(self, node: GraphNode) -> None:
         self.nodes.pop(node.id, None)
 
