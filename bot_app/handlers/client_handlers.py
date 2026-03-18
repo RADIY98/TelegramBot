@@ -1,5 +1,5 @@
 from bot_app.domain.events import client_events
-from bot_app.repositories.client_repository import ClientRepository
+from bot_app.infrastructure.repositories import ClientRepository
 
 
 class UpdateClientStatus:

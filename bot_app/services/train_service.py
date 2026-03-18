@@ -10,7 +10,7 @@ from bot_app.operation import Operation
 from bot_app.database.select import get_client_selected_entity
 from bot_app.database.update import drop_selected_entity, update_client_selected_entity
 from bot_app.base_names import TrainSettingsButton, SetTrainSettingsButtons, MAIN_MENU, StartButtons
-from bot_app.repositories.train_repository import TrainRepository
+from bot_app.infrastructure.repositories.train_repository import TrainRepository
 from bot_app.train import TrainStatus
 
 

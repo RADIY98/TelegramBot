@@ -1,38 +1,27 @@
+from enum import IntEnum
+
+
 MAIN_MENU = "В главное меню"
 
-class StartButtons:
-    """
-    Стартовый набор кнопок
-    """
-    trains = "Тренировки"
-    statistic = "Статистика"
-    set_trains = "Настроить тренировки"
+
+class Button(IntEnum):
+    TRAINS = 0
+    STATISTIC = 1
+    SET_TRAINS = 2
+
+    CHANGE_EXERCISE = 10
+    CHANGE_TRAIN_NAME = 11
+    ADD_EXERCISE = 12
+    BACK_TO_TRAIN = 13
+
+    DELETE_EXERCISE = 20
+    RENAME_EXERCISE = 21
+    CHANGE_SETTINGS_EXERCISE = 22
+    BACK_TO_EXERCISE = 23
+
+    DELETE_TRAIN = 30
+    CREATE_TRAIN = 31
+    CHANGE_TRAIN = 32
 
 
-class TrainButtons:
-    """
-    Набор кнопок для изменения тренировок
-    """
-    change_exercise = "Изменить упражнение"
-    rename_train = "Изменить название тренировки"
-    add_exercise = "Добавить упражнение"
-    back_to_trains = "Обратно к тренировкам"
 
-class SetExerciseSettingsButtons:
-    """
-    Набор кнопок для изменения упражнения
-    """
-    delete = "Удалить упражнение"
-    rename = "Переименовать упражнение"
-    change = "Изменить настройки упражнения"
-    back = "К упражнениям"
-
-
-class TrainSettingsButtons:
-    """
-    Набор кнопок для изменения тренировок
-    """
-    delete = "Удалить тренировку"
-    create = "Создать тренировку"
-    change = "Изменить тренировку"
-    main_menu = MAIN_MENU

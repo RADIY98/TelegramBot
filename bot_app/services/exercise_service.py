@@ -3,7 +3,7 @@ import json
 
 from bot_app.domain.entities import train_entity, exercise_entity
 from bot_app.domain.events import client_events
-from bot_app.repositories import exercie_repository
+from bot_app.infrastructure.repositories import exercie_repository
 
 
 class ExerciseService:
