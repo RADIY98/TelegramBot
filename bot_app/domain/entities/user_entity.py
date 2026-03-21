@@ -7,4 +7,5 @@ class UserEntity:
     """
     user_id: int
     update_id: int
-    first_visit: bool = True
+    first_name: str
+    user_name: str

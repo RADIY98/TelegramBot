@@ -1,4 +1,4 @@
-from bot_app.infrastructure.repositories import client_repository
+from bot_app.infrastructure.repositories import postgres_user_repository
 
 
 class ClientService:

@@ -9,6 +9,7 @@ from fastapi import APIRouter, Request
 
 from .KeyBoard import KeyBoard
 from .application.dto.pressed_buttons import PressedButton
+from .application.use_cases.handle_start_command import HandleStartCommand
 from .client import Client
 from .database import insert, select, update
 from bot_app.services.train_service import TrainService, TrainStatus
@@ -16,6 +17,7 @@ from .domain.entities.user_entity import UserEntity
 from .domain.events import client_events
 from .handlers import client_handlers
 from .event_bus import EventBus
+from .interface.telegram.mappers import request_to_button
 from .schemas.Response import Msg
 from .operation.status_operations import BaseOperation
 from . import base_names
@@ -49,13 +51,13 @@ async def get_updates(request: Request):
             update_id = record.get("update_id")
             print(update_id)
 
-            pushed_button: int = int(request.get("callback_query").get("data"))
+            pushed_button: PressedButton = request_to_button(record)
 
             client_entity: UserEntity = request_to_user(record)
 
 
-            if not client_obj.update_id:
-                insert.insert_client(msg, update_id)
+            if pushed_button.text == "/start":
+                HandleStartCommand()
                 text_msg = base_names.WELCOME_MESSAGE
                 key_board = base_names.StartButtons.buttons_array
 

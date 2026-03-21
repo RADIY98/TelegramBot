@@ -4,3 +4,4 @@ from dataclasses import dataclass
 class PressedButton:
     user_id: int
     button_id: int
+    text: str
