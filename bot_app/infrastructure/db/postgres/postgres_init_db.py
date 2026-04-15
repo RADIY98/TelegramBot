@@ -1,8 +1,12 @@
+from psycopg2 import connect
+
 from ....base_names import DbUser, DB_PASSWORD
 
 class DatabaseStart:
-    def __init__(self, dns):
-        self.dns = dns
+    def __init__(self):
+        self.dns = connect(
+            f"dbname=telegram_bot_db user={DbUser.DB_ROLE} host=postgres password={DbUser.ADMIN_PASSWORD} port=5432"
+        )
 
     def __create_custom_user(self):
         """Создаем нового пользователя в БД для безопасности"""
@@ -93,3 +97,5 @@ class DatabaseStart:
         self.__create_client_table()
         self.__create_train_table()
         self.__create_exercise_table()
+
+        self.dns.commit()

@@ -11,14 +11,16 @@ from .KeyBoard import KeyBoard
 from .application.dto.pressed_buttons import PressedButton
 from .application.use_cases.handle_start_command import HandleStartCommand
 from .client import Client
-from .database import insert, select, update
+from .database import select, update
 from bot_app.services.train_service import TrainService, TrainStatus
 from .domain.entities.user_entity import UserEntity
 from .domain.events import client_events
+from .domain.repositories.user_repositoriy import IUserRepository
 from .handlers import client_handlers
 from .event_bus import EventBus
+from .infrastructure.repositories.postgres_user_repository import PostgresClientRepository
 from .interface.telegram.mappers import request_to_button
-from .schemas.Response import Msg
+from bot_app.interface.telegram.request_model import Msg
 from .operation.status_operations import BaseOperation
 from . import base_names
 from interface.telegram.mappers import request_to_user
@@ -43,13 +45,13 @@ async def get_updates(request: Request):
     print(record)
     if record:
         try:
-            message = record.get("message") if record.get("message") else record.get("my_chat_member")
+            message = record.get("message")
             client_obj = Client(message.get("chat").get("id"))
 
             msg: Msg = Msg(record.get("message"))
+
             client_id = msg.chat.id
             update_id = record.get("update_id")
-            print(update_id)
 
             pushed_button: PressedButton = request_to_button(record)
 
@@ -57,7 +59,7 @@ async def get_updates(request: Request):
 
 
             if pushed_button.text == "/start":
-                HandleStartCommand()
+                HandleStartCommand(PostgresClientRepository).execute(user_id)
                 text_msg = base_names.WELCOME_MESSAGE
                 key_board = base_names.StartButtons.buttons_array
 

@@ -1,9 +1,9 @@
-from bot_app.domain.repositories.user_repositoriy import UserRepository
+from bot_app.domain.repositories.user_repositoriy import IUserRepository
 
 
 class HandleStartCommand:
     """Class for first visit"""
-    def __init__(self, user_rep: UserRepository):
+    def __init__(self, user_rep: IUserRepository):
         self.user_rep = user_rep
 
     def execute(self,  user_id: int) -> None:

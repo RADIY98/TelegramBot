@@ -3,7 +3,7 @@
 Модуль для вставки записей в БД
 """
 from bot_app.database import sql_query
-from bot_app.schemas.Response import Msg
+from bot_app.interface.telegram.request_model import Msg
 
 
 def insert_client(msg: Msg, update_id: int) -> None:
