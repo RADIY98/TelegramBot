@@ -1,12 +1,10 @@
-from ..database import sql_query, sql_query_record, sql_query_scalar
+from dataclasses import dataclass
 
-
-class TrainStatus:
+@dataclass
+class Train:
     """
     Статусы тренировок
     """
-    CHANGE = 1
-    DELETE = 2
-    CREATE = 3
-    RENAME = 4
-    status_array = [CREATE, DELETE, CHANGE, RENAME]
+    train_id: int
+    name: str
+    client_id: int
