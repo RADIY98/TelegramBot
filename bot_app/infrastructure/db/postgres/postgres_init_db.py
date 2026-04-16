@@ -49,7 +49,7 @@ class DatabaseStart:
 
         cursor.execute(
             """
-            CREATE TABLE IF NOT EXISTS "Client" (
+            CREATE TABLE IF NOT EXISTS "User" (
             "id" INTEGER PRIMARY KEY,
             "FirstName" TEXT NOT NULL,
             "UserName" TEXT NOT NULL,
@@ -70,7 +70,7 @@ class DatabaseStart:
             CREATE TABLE IF NOT EXISTS "Train" (
             "id" SERIAL PRIMARY KEY,
             "Name" text NOT NULL,
-            "ClientID" INTEGER NOT NULL REFERENCES "Client"(id) ON DELETE CASCADE
+            "ClientID" INTEGER NOT NULL REFERENCES "User"(id) ON DELETE CASCADE
             )
             """
         )

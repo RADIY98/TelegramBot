@@ -67,7 +67,7 @@ class TrainRepository:
             SET
                 "Name"=%s::text
             WHERE
-                "id" = (SELECT "SelectedEntity" FROM "Client" WHERE "id"=%s:: int)
+                "id" = (SELECT "SelectedEntity" FROM "User" WHERE "id"=%s:: int)
             """, (train_name, client_id)
         )
 

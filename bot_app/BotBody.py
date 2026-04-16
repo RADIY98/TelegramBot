@@ -10,7 +10,7 @@ from fastapi import APIRouter, Request
 from .KeyBoard import KeyBoard
 from .application.dto.pressed_buttons import PressedButton
 from .application.use_cases.handle_start_command import HandleStartCommand
-from .client import Client
+from .client import User
 from .database import select, update
 from bot_app.services.train_service import TrainService, TrainStatus
 from .domain.entities.user_entity import UserEntity
@@ -46,7 +46,7 @@ async def get_updates(request: Request):
     if record:
         try:
             message = record.get("message")
-            client_obj = Client(message.get("chat").get("id"))
+            client_obj = User(message.get("chat").get("id"))
 
             msg: Msg = Msg(record.get("message"))
 

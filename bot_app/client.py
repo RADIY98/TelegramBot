@@ -3,7 +3,7 @@
 """
 from .database import select
 
-class Client:
+class User:
     """
     Класс клиента
     """

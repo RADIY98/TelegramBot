@@ -13,7 +13,7 @@ class ExerciseRepository:
             ("Name",
              "TrainId")
             SELECT %s::text AS "ExerciseName", "SelectedEntity"
-            FROM "Client"
+            FROM "User"
             WHERE "id" = %s::bigint
             """, (exercise_name, client_id)
         )
@@ -24,7 +24,7 @@ class ExerciseRepository:
             """
             DELETE
             FROM "Exercise"
-            WHERE "id" = (SELECT "SelectedEntity" FROM "Client" WHERE "id" = %s) RETURNING
+            WHERE "id" = (SELECT "SelectedEntity" FROM "User" WHERE "id" = %s) RETURNING
                 "Name",
                 "TrainId"
             """, [client_id]

@@ -5,7 +5,7 @@ from re import findall
 from .. import base_names
 from ..exercise import ExerciseStatus
 from ..train import TrainStatus
-from ..client import Client
+from ..client import User
 from bot_app.services.train_service import TrainService
 from ..domain.events import client_events
 from ..database.update import update_client_selected_entity
@@ -21,7 +21,7 @@ class BaseOperation:
     CHOOSE_EXERCISE_FROM_LIST = "Выберите упражнение из списка"
     SELECTED_TRAIN = 'Вы выбрали тренировку - "{}"'
 
-    def __init__(self, client_obj: Client, event_bus):
+    def __init__(self, client_obj: User, event_bus):
         self.client_obj = client_obj
         self.exercise_service = service.ExerciseService(client_obj.client_id)
         self.exercise_repository = repository.ExerciseRepository

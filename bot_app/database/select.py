@@ -10,7 +10,7 @@ def get_client_selected_entity(client_id: int) -> int:
         SELECT
             "SelectedEntity"
         FROM
-            "Client"
+            "User"
         WHERE
             "id"=%(client)s::bigint
         """, {"client": client_id}
@@ -41,7 +41,7 @@ def get_client_data(client_id: int) -> dict:
             "SelectedEntity"::bigint,
             (SELECT * FROM trains) "Trains"
         FROM
-            "Client"
+            "User"
         WHERE
             "id" = %s::bigint
         """, [client_id, client_id]
