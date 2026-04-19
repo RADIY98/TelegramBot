@@ -1,11 +1,13 @@
 from dataclasses import dataclass
+from typing import Optional
+
 
 @dataclass
 class UserEntity:
-    """
-    Класс клиента
-    """
+    """User object"""
     user_id: int
     update_id: int
     first_name: str
     user_name: str
+    selected_entity: int
+    status: Optional[int]

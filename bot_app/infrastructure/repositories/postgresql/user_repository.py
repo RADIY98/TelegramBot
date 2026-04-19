@@ -14,10 +14,12 @@ class PostgresClientRepository(IUserRepository):
         data: dict = sql_query_record(
             """
                 SELECT
-                    user_id,
-                    update_id,
-                    first_name,
-                    user_name
+                "id",
+                "FirstName",
+                "UserName",
+                "UpdateId",
+                "Status",
+                "SelectedEntity"
                 FROM
                     "User"
                 WHERE
@@ -27,10 +29,12 @@ class PostgresClientRepository(IUserRepository):
         )
 
         return UserEntity(
-            user_id=data.get("user_id"),
-            update_id=data.get("update_id"),
-            first_name=data.get("first_name"),
-            user_name=data.get("user_name")
+            user_id=data.get("id"),
+            update_id=data.get("UpdateId"),
+            first_name=data.get("FirstName"),
+            user_name=data.get("UserName"),
+            status=data.get("Status"),
+            selected_entity=data.get("SelectedEntity")
         )
 
 

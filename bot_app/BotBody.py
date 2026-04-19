@@ -10,12 +10,10 @@ from fastapi import APIRouter, Request
 from .KeyBoard import KeyBoard
 from .application.dto.pressed_buttons import PressedButton
 from .application.use_cases.handle_start_command import HandleStartCommand
-from .client import User
 from .database import select, update
 from bot_app.services.train_service import TrainService, TrainStatus
 from .domain.entities.user_entity import UserEntity
 from .domain.events import client_events
-from .domain.repositories.user_repositoriy import IUserRepository
 from .handlers import client_handlers
 from .event_bus import EventBus
 from .infrastructure.repositories.postgres_user_repository import PostgresClientRepository
@@ -24,6 +22,7 @@ from bot_app.interface.telegram.request_model import Msg
 from .operation.status_operations import BaseOperation
 from . import base_names
 from interface.telegram.mappers import request_to_user
+from infrastructure.repositories.postgresql.user_repository import PostgresClientRepository
 
 
 router = APIRouter()
@@ -46,25 +45,37 @@ async def get_updates(request: Request):
     if record:
         try:
             message = record.get("message")
-            client_obj = User(message.get("chat").get("id"))
+            user_id = message.get("chat").get("id")
+
+            user_info: UserEntity = PostgresClientRepository().get_user_info(user_id)
 
             msg: Msg = Msg(record.get("message"))
-
-            client_id = msg.chat.id
-            update_id = record.get("update_id")
+            new_update_id: int = record.get("update_id")
 
             pushed_button: PressedButton = request_to_button(record)
 
-            client_entity: UserEntity = request_to_user(record)
-
-
             if pushed_button.text == "/start":
                 HandleStartCommand(PostgresClientRepository).execute(user_id)
-                text_msg = base_names.WELCOME_MESSAGE
-                key_board = base_names.StartButtons.buttons_array
 
-            elif update_id <= client_obj.update_id:
-                pass
+                update.update_client_last_update(user_id, user_info.update_id)
+
+                return JSONResponse(
+                    content={
+                        "ok": True,
+                        "chat_id": user_id,
+                        "text": base_names.WELCOME_MESSAGE,
+                        "reply_markup": json.dumps({'keyboard': KeyBoard(base_names.StartButtons.buttons_array).get_keyboard()})
+                    }
+                )
+
+            if new_update_id <= user_info.update_id:
+                return JSONResponse(
+                    content={
+                        "ok": True,
+                        "chat_id": user_id
+                    }
+                )
+
 
             if client_obj.status:
                 text_msg, key_board = BaseOperation(client_obj).call_method(msg)

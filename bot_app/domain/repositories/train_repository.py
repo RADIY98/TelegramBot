@@ -3,7 +3,7 @@ from typing import List
 
 from ..entities.train_entity import Train
 
-class TrainRepository(ABC):
+class ITrainRepository(ABC):
 
     @abstractmethod
     def add(self, client: int, train_name: str) -> None:
