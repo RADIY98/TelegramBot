@@ -1,6 +1,6 @@
 from abc import ABC
 
-from bot_app.domain.entities.exercise_entity import Exercise, ExerciseSettings
+from bot_app.domain.entities.exercise_entity import Exercise
 
 
 class IExerciseRepository(ABC):

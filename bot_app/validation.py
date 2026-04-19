@@ -1,6 +1,4 @@
-"""
-Module for validating data
-"""
+"""Module for validating data"""
 __author__ = "Nelidov N.N."
 
 
