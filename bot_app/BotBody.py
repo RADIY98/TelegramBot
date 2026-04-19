@@ -9,19 +9,12 @@ from fastapi import APIRouter, Request
 
 from .KeyBoard import KeyBoard
 from .application.dto.pressed_buttons import PressedButton
+from .application.use_cases.handle_button import HandleButton
 from .application.use_cases.handle_start_command import HandleStartCommand
-from .database import select, update
-from bot_app.services.train_service import TrainService, TrainStatus
 from .domain.entities.user_entity import UserEntity
-from .domain.events import client_events
-from .handlers import client_handlers
-from .event_bus import EventBus
-from .infrastructure.repositories.postgres_user_repository import PostgresClientRepository
 from .interface.telegram.mappers import request_to_button
 from bot_app.interface.telegram.request_model import Msg
-from .operation.status_operations import BaseOperation
 from . import base_names
-from interface.telegram.mappers import request_to_user
 from infrastructure.repositories.postgresql.user_repository import PostgresClientRepository
 
 
@@ -33,157 +26,59 @@ path = os.path.realpath("bot_app")
 @router.post(r"/bot")
 async def get_updates(request: Request):
     """Метод получения обновлений"""
-    text_msg = None
-    key_board = None
     record = await request.json()
 
-    event_bus = EventBus()
-    event_bus.subscribe(client_events.ClientEventStatusChange, client_handlers.UpdateClientStatus)
-    event_bus.subscribe(client_events.ClientEventSelectedEntityChange, client_handlers.UpdateClientSelectedEntity)
-
-    print(record)
     if record:
-        try:
-            message = record.get("message")
-            user_id = message.get("chat").get("id")
+        message = record.get("message")
+        user_id = message.get("chat").get("id")
 
-            user_info: UserEntity = PostgresClientRepository().get_user_info(user_id)
+        user_info: UserEntity = PostgresClientRepository().get_user_info(user_id)
 
-            msg: Msg = Msg(record.get("message"))
-            new_update_id: int = record.get("update_id")
+        msg: Msg = Msg(record.get("message"))
+        new_update_id: int = record.get("update_id")
 
-            pushed_button: PressedButton = request_to_button(record)
+        pushed_button: PressedButton = request_to_button(record)
 
-            if pushed_button.text == "/start":
-                HandleStartCommand(PostgresClientRepository).execute(user_id)
+        if pushed_button.text == "/start":
+            HandleStartCommand(PostgresClientRepository).execute(user_id)
 
-                update.update_client_last_update(user_id, user_info.update_id)
-
-                return JSONResponse(
-                    content={
-                        "ok": True,
-                        "chat_id": user_id,
-                        "text": base_names.WELCOME_MESSAGE,
-                        "reply_markup": json.dumps({'keyboard': KeyBoard(base_names.StartButtons.buttons_array).get_keyboard()})
-                    }
-                )
-
-            if new_update_id <= user_info.update_id:
-                return JSONResponse(
-                    content={
-                        "ok": True,
-                        "chat_id": user_id
-                    }
-                )
-
-
-            if client_obj.status:
-                text_msg, key_board = BaseOperation(client_obj).call_method(msg)
-            else:
-                if msg.text == base_names.MAIN_MENU:
-                    text_msg = base_names.BACK_TO_MAIN_MENU
-                    key_board = base_names.StartButtons.buttons_array
-
-                elif msg.text == base_names.StartButtons.set_trains:
-                    text_msg = base_names.LETS_SET_TRAIN_FROM_LIST
-                    key_board = base_names.TrainSettingsButton.buttons_array
-
-                elif msg.text == base_names.TrainSettingsButton.delete:
-                    text_msg = base_names.GOING_TO_DELETE
-                    key_board = client_obj.trains
-
-                    event_bus.publish(
-                        client_events.ClientEventStatusChange(
-                        client_id=client_id,
-                        client_status=TrainStatus.DELETE
-                        )
-                    )
-
-                elif msg.text == base_names.TrainSettingsButton.change:
-                    text_msg = base_names.GOING_TO_CHANGE
-                    key_board = client_obj.trains
-
-                    event_bus.publish(
-                        client_events.ClientEventStatusChange(
-                            client_id=client_id,
-                            client_status=TrainStatus.CHANGE
-                        )
-                    )
-
-                elif msg.text == base_names.TrainSettingsButton.create:
-                    text_msg = base_names.ENTER_TRAIN_NAME
-                    key_board = base_names.StartButtons.buttons_array
-
-                    event_bus.publish(
-                        client_events.ClientEventStatusChange(
-                            client_id=client_id,
-                            client_status=TrainStatus.CREATE
-                        )
-                    )
-
-                elif msg.text == base_names.StartButtons.trains:
-                    if client_obj.trains:
-                        text_msg = base_names.CHOOSE_TRAIN_FROM_LIST
-                        key_board = client_obj.trains
-                    else:
-                        text_msg = base_names.LETS_CREATE_TRAIN
-                        key_board = []
-
-                elif msg.text in client_obj.trains:
-                    event_entity = client_events.ClientEventSelectedEntityChange(
-                        client_id=client_id,
-                        selected_id=int(msg.text)
-                    )
-
-                    event_status = client_events.ClientEventStatusChange(
-                        client_id=client_id,
-                        client_status=base_names.EXERCISE_READ_STATUS
-                    )
-
-                    event_bus.publish_many(event_status, event_entity)
-
-                    train_id = select.get_client_selected_entity(client_id)
-                    key_board = exercise_service.ExerciseService(client_id).get_exercises_name_by_train(
-                        train_id
-                    )
-                    text_msg = base_names.SELECTED_TRAIN.format(TrainService(client_id, client_status, event_bus).read(train_id))
-                elif msg.text == base_names.StartButtons.statistic:
-                    pass
-
-            if text_msg is not None:
-                print(f"Keyboard - {key_board}")
-                print(f"Text_msg - {text_msg}")
-
-                send_message(
-                    chat_id=client_id,
-                    text=text_msg,
-                    reply_markup=json.dumps(
-                        {'keyboard': KeyBoard(key_board).get_keyboard()})
-                )
-
-            update.update_client_last_update(client_id, update_id)
+            PostgresClientRepository().change_update_id(user_id, new_update_id)
 
             return JSONResponse(
                 content={
                     "ok": True,
-                    "chat_id": client_id,
-                    "text": text_msg,
-                    "reply_markup": json.dumps({'keyboard': KeyBoard(key_board).get_keyboard()})
+                    "chat_id": user_id,
+                    "text": base_names.WELCOME_MESSAGE,
+                    "reply_markup": json.dumps({'keyboard': KeyBoard(base_names.StartButtons.buttons_array).get_keyboard()})
                 }
             )
-        except Exception as e:
+
+        if new_update_id <= user_info.update_id:
             return JSONResponse(
                 content={
-                    "ok": True,
-                    "text": f"{e}"
+                    "ok": True
                 }
             )
+
+        button_strategy = HandleButton().execute(pushed_button)
+
+        text_msg, key_board = button_strategy.get()
+
+        return JSONResponse(
+            content={
+                "ok": True,
+                "chat_id": user_id,
+                "text": text_msg,
+                "reply_markup": json.dumps({'keyboard': KeyBoard(key_board).get_keyboard()})
+            }
+        )
 
     return JSONResponse(
         content={
             "ok": True
         }
     )
+
 
 def _call_tg_method(method: str, params: dict) -> dict:
     """

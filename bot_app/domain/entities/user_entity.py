@@ -9,5 +9,3 @@ class UserEntity:
     update_id: int
     first_name: str
     user_name: str
-    selected_entity: int
-    status: Optional[int]
