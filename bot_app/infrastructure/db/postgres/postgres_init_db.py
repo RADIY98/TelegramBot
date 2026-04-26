@@ -1,6 +1,6 @@
 from psycopg2 import connect
 
-from ....base_names import DbUser, DB_PASSWORD
+from ....base_names import DbUser
 
 class DatabaseStart:
     def __init__(self):
